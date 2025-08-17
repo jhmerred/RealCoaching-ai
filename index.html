@@ -181,6 +181,9 @@
             padding: 20px 24px;
             border-bottom: 1px solid #e0e0e0;
             background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .chat-header h2 {
@@ -210,7 +213,7 @@
         }
 
         .message-wrapper {
-            max-width: 50%;
+            max-width: 70%;
             min-width: 0;
         }
 
@@ -321,17 +324,117 @@
             margin-bottom: 12px;
         }
 
+        /* 햄버거 메뉴 버튼 */
+        .menu-toggle {
+            display: none;
+            width: 40px;
+            height: 40px;
+            background: #000;
+            border: 1px solid #000;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 8px;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            margin-right: 12px;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .menu-toggle:hover {
+            background: #333;
+            border-color: #333;
+        }
+
+        .menu-toggle.active {
+            background: #fff;
+            border-color: #e0e0e0;
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: #fff;
+            transition: all 0.3s ease;
+            border-radius: 1px;
+        }
+
+        .menu-toggle.active span {
+            background: #000;
+        }
+
+        .menu-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(7px, 7px);
+        }
+
+        .menu-toggle.active span:nth-child(2),
+        .menu-toggle.active span:nth-child(3),
+        .menu-toggle.active span:nth-child(4) {
+            opacity: 0;
+        }
+
+        .menu-toggle.active span:nth-child(5) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* 모바일 오버레이 */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+        }
+
         /* 반응형 */
         @media (max-width: 768px) {
-            .sidebar {
-                display: none;
+            .menu-toggle {
+                display: flex;
             }
+
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.active {
+                left: 0;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+
+            .sidebar-overlay {
+                display: block;
+                pointer-events: none;
+            }
+
+            .sidebar-overlay.active {
+                pointer-events: auto;
+            }
+
         }
     </style>
 </head>
 <body>
+    <!-- 사이드바 오버레이 -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
     <!-- 사이드바 -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h1>리얼코칭 AI 챗봇</h1>
             <p>감정진단 전문 AI - 한이</p>
@@ -383,6 +486,13 @@
     <!-- 메인 컨텐츠 -->
     <div class="main-content">
         <div class="chat-header">
+            <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <h2>대화창</h2>
         </div>
 
@@ -618,6 +728,31 @@
                 sendMessage();
             }
         }
+
+        // 사이드바 토글 함수
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('active');
+            menuToggle.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // 화면 크기 변경 감지
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                // 데스크톱 모드로 전환 시 모바일 메뉴 상태 초기화
+                const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.getElementById('menuToggle');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                sidebar.classList.remove('active');
+                menuToggle.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        });
 
         // 초기 상태 업데이트
         updateStatus();

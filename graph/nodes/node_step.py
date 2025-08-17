@@ -24,16 +24,11 @@ def step(state: State, llm: LLM) -> State:
     # 동적 시스템 프롬프트 생성
     dynamic_prompt = render("system_dynamic.txt",
         turn_budget=state.turn_budget,
-        coverage_goal_safety=state.coverage_goal.safety,
-        coverage_goal_mood=state.coverage_goal.mood,
-        coverage_goal_culture=state.coverage_goal.culture,
-        coverage_goal_ei=state.coverage_goal.ei,
-        coverage_goal_leader_ei=state.coverage_goal.leader_ei,
-        coverage_safety=state.coverage.safety,
-        coverage_mood=state.coverage.mood,
-        coverage_culture=state.coverage.culture,
-        coverage_ei=state.coverage.ei,
-        coverage_leader_ei=state.coverage.leader_ei,
+        coverage_safety=state.coverage.safety * 100 // state.coverage_goal.safety,
+        coverage_mood=state.coverage.mood * 100 // state.coverage_goal.mood,
+        coverage_culture=state.coverage.culture * 100 // state.coverage_goal.culture,
+        coverage_ei=state.coverage.ei * 100 // state.coverage_goal.ei,
+        coverage_leader_ei=state.coverage.leader_ei * 100 // state.coverage_goal.leader_ei,
     )
 
     print("--------------------------------------------------------------------------------------------------------")
@@ -70,20 +65,8 @@ def step(state: State, llm: LLM) -> State:
         ei=min(100, state.coverage.ei + sig.ei),
         leader_ei=min(100, state.coverage.leader_ei + sig.leader_ei)
     )
-    
-    # 모든 역량이 목표치에 도달했는지 확인
-    goals_met = (
-        new_coverage.safety >= state.coverage_goal.safety and
-        new_coverage.mood >= state.coverage_goal.mood and
-        new_coverage.culture >= state.coverage_goal.culture and
-        new_coverage.ei >= state.coverage_goal.ei and
-        new_coverage.leader_ei >= state.coverage_goal.leader_ei
-    )
 
     assistant_type = parsed.get("assistant_output_type") or "questioning"
-    if goals_met or state.turn_budget <= 0:
-        assistant_type = "finished"
-
     assistant_text = parsed.get("assistant_output") or ""
 
     # 상태 업데이트
