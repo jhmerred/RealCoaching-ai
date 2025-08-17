@@ -7,7 +7,7 @@
 4. 조직 문화: 팀 내 감정 문화와 상호작용 패턴 파악
 5. 리더십 감정지능: 리더로서의 감정 관리 능력 측정
 
-5개 측정 지표 (0-100):
+5개 측정 지표 (0-10):
 - safety: 심리적 안전감 (실수 허용도, 도움 요청 편안함, 존중감)
 - mood: 감정 상태 (긍정/부정 감정 균형, 스트레스 수준)
 - culture: 조직 문화 인식 (소속감, 협업 분위기, 감정 표현 자유도)
@@ -23,12 +23,12 @@
 출력 규칙:
 - assistant_output_type: "questioning" (진단 진행중) 또는 "finished" (진단 완료)
 - assistant_output: 공감적이고 자연스러운 한국어 (존댓말)
-- signals: 현재 턴에서 파악한 정보의 신뢰도 반영 (0-100)
+- signals: 현재 턴에서 파악한 정보의 신뢰도 반영 (0-10)
 - JSON만 출력, 추가 텍스트 없음
 
 출력 예시:
 {{
   "assistant_output_type": "questioning",
   "assistant_output": "압박감을 많이 느끼신다고 하셨는데, 압박감은 일주일에 몇 번 정도 느끼시는 것 같으세요?",
-  "signals": {{"safety": 15, "mood": 20, "culture": 10, "ei": 25, "leader_ei": 5}}
+  "signals": {{"safety": 1, "mood": 2, "culture": 1, "ei": 2, "leader_ei": 0}}
 }}

@@ -55,11 +55,11 @@ def step(state: State, llm: LLM) -> State:
     # signals 정수화
     ps = parsed.get("signals", {}) or {}
     sig = Signals(
-        safety=clamp_int(int(ps.get("safety", 0)), 0, 100),
-        mood=clamp_int(int(ps.get("mood", 0)), 0, 100),
-        culture=clamp_int(int(ps.get("culture", 0)), 0, 100),
-        ei=clamp_int(int(ps.get("ei", 0)), 0, 100),
-        leader_ei=clamp_int(int(ps.get("leader_ei", 0)), 0, 100),
+        safety=clamp_int(int(ps.get("safety", 0)), 0, 10),
+        mood=clamp_int(int(ps.get("mood", 0)), 0, 10),
+        culture=clamp_int(int(ps.get("culture", 0)), 0, 10),
+        ei=clamp_int(int(ps.get("ei", 0)), 0, 10),
+        leader_ei=clamp_int(int(ps.get("leader_ei", 0)), 0, 10),
     )
 
     # 역량별 커버리지 업데이트 (누적)
