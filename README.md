@@ -1,29 +1,24 @@
-# LangGraph One-Node
+# LangGraph One-Node (LangChain + .env auto-load)
 
-한 개의 노드(`step`)로 **라포 질문 생성 → 응답 분석 → 커버리지 확인 → 결과 출력**까지
-각 요청마다 한 번의 LLM 호출로 처리합니다.
+- LLM: `from langchain.chat_models import init_chat_model`
+- .env: 앱 기동 시 코드에서 자동 로드
+- State: `signals`는 5개 역량 **정수 0~100**, `coverage=int(sum(signals))`, `coverage_goal=int`(기본 400), `uncertainty` 제거
 
-## Quickstart (uv)
+## Quickstart
 ```bash
 uv venv .venv && . .venv/bin/activate
 uv sync
 cp config/.env.example config/.env
-# OpenAI API 키/모델명 설정
 uv run uvicorn apps.api.main:app --host 0.0.0.0 --port 8000 --reload
+# 또는 --env-file config/.env 병행 가능
 ```
 
-### API
-`POST /chat`
+### /chat
+Request:
 ```json
 { "session_id": "demo", "message": "안녕하세요" }
 ```
-응답:
+Response:
 ```json
-{ "reply": "어시스턴트 한 문장 또는 최종 결과", "state": { ... } }
+{ "reply": "...", "state": { "signals": {...}, "coverage": 380, "coverage_goal": 400, "finished": false, ... } }
 ```
-
-### 설계 요점
-- 그래프 노드 1개: `step`
-- 매 턴 LLM 1회 호출로 **signals/coverage 업데이트 + next 메시지** 생성
-- 종료 조건: `coverage >= goal` 또는 사용자 "진단 종료" 발화 또는 턴 예산 초과
-- 실패 시 폴백: JSON 파싱 실패 → 증분 0, 라포 질문 1문장

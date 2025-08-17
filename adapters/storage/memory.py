@@ -1,5 +1,5 @@
 from typing import Dict
-from graph.state import State, Turn
+from graph.state import State
 
 class InMemory:
     def __init__(self):
@@ -7,7 +7,7 @@ class InMemory:
 
     def load(self, session_id: str) -> State:
         if session_id not in self._db:
-            self._db[session_id] = State(messages=[], finished=False)
+            self._db[session_id] = State()
         return self._db[session_id]
 
     def save(self, session_id: str, state: State) -> None:
