@@ -1,5 +1,5 @@
 import json, re
-from ..state import State, Turn, Signals, Coverage
+from ..state import State, Turn, Signals, Coverage, ScoreDetail, ScoreSummary
 from ..prompts.prompts_loader import render
 from adapters_interface import LLM
 
@@ -77,5 +77,120 @@ def step(state: State, llm: LLM) -> State:
 
     if assistant_type == "finished":
         state.finished = True
+        # 점수 계산
+        state = calculate_final_score(state, llm)
 
+    return state
+
+
+def calculate_final_score(state: State, llm: LLM) -> State:
+    """
+    대화가 종료되었을 때 점수를 계산합니다.
+    """
+    # 점수 계산 프롬프트 로드
+    score_prompt = render("score_calculation.txt")
+    
+    # 대화 내역 정리
+    conversation = "\n".join([
+        f"{msg.role}: {msg.content}" 
+        for msg in state.messages
+    ])
+    
+    # LLM에 점수 계산 요청
+    score_messages = [
+        Turn(role="system", content=score_prompt),
+        Turn(role="user", content=f"다음 대화 내용을 분석하여 점수를 계산해주세요:\n\n{conversation}")
+    ]
+    
+    raw_score = llm.text(score_messages)
+    
+    print("\n=== 점수 계산 중 ===")
+    print(raw_score)
+    
+    try:
+        # JSON 파싱
+        result = json.loads(raw_score)
+        
+        # ScoreDetail 업데이트
+        score_detail_data = result.get("score_detail", {})
+        score_detail = ScoreDetail(**score_detail_data)
+        
+        # 각 카테고리별 총점 계산
+        safety_total = (
+            score_detail.safety_mistake_freedom +
+            score_detail.safety_opinion_expression +
+            score_detail.safety_respect +
+            score_detail.safety_conflict_resolution
+        )
+        
+        mood_total = (
+            score_detail.mood_positive_frequency +
+            score_detail.mood_negative_intensity +
+            score_detail.mood_stress_level +
+            score_detail.mood_emotion_variance +
+            score_detail.mood_resilience
+        )
+        
+        culture_total = (
+            score_detail.culture_belonging +
+            score_detail.culture_collaboration +
+            score_detail.culture_emotion_expression +
+            score_detail.culture_value_alignment
+        )
+        
+        ei_total = (
+            score_detail.ei_self_awareness +
+            score_detail.ei_self_regulation +
+            score_detail.ei_empathy +
+            score_detail.ei_motivation
+        )
+        
+        leader_ei_total = (
+            score_detail.leader_ei_team_emotion +
+            score_detail.leader_ei_conflict_mgmt +
+            score_detail.leader_ei_motivation
+        )
+        
+        overall = safety_total + mood_total + culture_total + ei_total + leader_ei_total
+        
+        # 등급 계산
+        if overall >= 90:
+            grade = "A"
+        elif overall >= 80:
+            grade = "B"
+        elif overall >= 70:
+            grade = "C"
+        elif overall >= 60:
+            grade = "D"
+        else:
+            grade = "F"
+        
+        score_summary = ScoreSummary(
+            safety_total=safety_total,
+            mood_total=mood_total,
+            culture_total=culture_total,
+            ei_total=ei_total,
+            leader_ei_total=leader_ei_total,
+            overall=overall,
+            grade=grade
+        )
+        
+        # State 업데이트
+        state.score_detail = score_detail
+        state.score_summary = score_summary
+        
+        print(f"\n=== 진단 점수 계산 완료 ===")
+        print(f"총점: {overall:.1f}/100")
+        print(f"등급: {grade}")
+        print(f"- 심리적 안전감: {safety_total:.1f}/20")
+        print(f"- 감정 상태: {mood_total:.1f}/25")
+        print(f"- 조직 문화: {culture_total:.1f}/20")
+        print(f"- 감성지능: {ei_total:.1f}/20")
+        print(f"- 리더 감성지능: {leader_ei_total:.1f}/15")
+        
+    except json.JSONDecodeError as e:
+        print(f"점수 계산 중 JSON 파싱 오류: {e}")
+    except Exception as e:
+        print(f"점수 계산 중 오류 발생: {e}")
+    
     return state
