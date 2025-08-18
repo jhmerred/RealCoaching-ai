@@ -1,0 +1,18 @@
+{
+    "dependencies": [
+        "langchain_openai",
+        "langsmith",
+        "./graph"
+    ],
+    "graphs": {
+        "realcoaching": "./graph/graph.py:graph"
+    },
+    "env": "./.env",
+    "runtime": {
+        "tracing": {
+            "enabled": true,
+            "sampling_rate": 1.0,
+            "project_name": "realcoaching-ai"
+        }
+    }
+}
