@@ -34,8 +34,8 @@ def calculate_cost(model_name: str, input_tokens: int, output_tokens: int, excha
     # 모델명 정규화
     model_key = model_name.lower()
     
-    # 기본값 (gpt-4o-mini 가격 사용)
-    pricing = PRICING.get("gpt-4o-mini")
+    # 기본값 (gpt-5-mini 가격 사용)
+    pricing = PRICING.get("gpt-5-mini")
     
     # 정확한 모델 가격 찾기
     for key in PRICING:

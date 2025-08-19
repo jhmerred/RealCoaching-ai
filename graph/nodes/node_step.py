@@ -57,7 +57,7 @@ def step(state: State, llm: LLM) -> State:
             state.token_usage.current_output_tokens = output_tokens
             
             # 비용 계산 (KRW로 반환됨)
-            model_name = os.getenv("MODEL_NAME", "gpt-4o-mini")
+            model_name = os.getenv("MODEL_NAME", "gpt-5-mini")
             cost_krw = calculate_cost(model_name, input_tokens, output_tokens)
             state.token_usage.current_cost_krw = cost_krw
             

@@ -6,7 +6,7 @@ from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 class LangChainLLM:
     """LLM adapter using LangChain's init_chat_model.
 
-    MODEL_NAME env (e.g., 'gpt-4o-mini'); provider defaults to 'openai',
+    MODEL_NAME env (e.g., 'gpt-5-mini'); provider defaults to 'openai',
 
     so 'openai:MODEL' is used unless you already pass 'provider:model'.
     """
