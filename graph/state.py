@@ -66,6 +66,17 @@ class ScoreSummary(BaseModel):
     overall: float = Field(0.0, ge=0.0, le=100.0)  # 전체 총점 (100점 만점)
     grade: str = "F"  # 등급 (A: 90+, B: 80-89, C: 70-79, D: 60-69, F: 0-59)
 
+class TokenUsage(BaseModel):
+    # 현재 응답 토큰 사용량
+    current_input_tokens: int = 0  # 현재 입력 토큰 수
+    current_output_tokens: int = 0  # 현재 출력 토큰 수
+    current_cost_krw: float = 0.0  # 현재 응답 비용 (KRW)
+    
+    # 세션 전체 누적 토큰 사용량
+    total_input_tokens: int = 0  # 총 입력 토큰 수
+    total_output_tokens: int = 0  # 총 출력 토큰 수  
+    total_cost_krw: float = 0.0  # 총 비용 (KRW)
+
 class State(BaseModel):
     messages: List[Turn] = Field(default_factory=list)
     signals: Signals = Signals()  # 이번 턴 측정값(0..10 정수)
@@ -73,5 +84,6 @@ class State(BaseModel):
     coverage_goal: CoverageGoal = CoverageGoal()  # 역량별 목표 커버리지
     score_detail: ScoreDetail = ScoreDetail()  # 세부 항목별 점수
     score_summary: ScoreSummary = ScoreSummary()  # 파트별 총점 및 전체 점수
+    token_usage: TokenUsage = TokenUsage()  # 토큰 사용량 및 비용
     finished: bool = False
     turn_budget: int = 3

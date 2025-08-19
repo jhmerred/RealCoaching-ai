@@ -237,6 +237,27 @@
             overflow-wrap: break-word;
             hyphens: auto;
         }
+        
+        .message-cost {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            padding: 0 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .message-cost .cost-icon {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            background: #f0f0f0;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 14px;
+            font-size: 10px;
+        }
 
         .message.assistant .message-content {
             background: #fff;
@@ -479,6 +500,10 @@
                     <span class="status-label">대화 수</span>
                     <span class="status-value" id="messageCount">0</span>
                 </div>
+                <div class="status-item">
+                    <span class="status-label">사용 금액</span>
+                    <span class="status-value" id="totalCost">₩0</span>
+                </div>
             </div>
         </div>
     </div>
@@ -521,6 +546,7 @@
         let isLoading = false;
         let isFinished = false;
         let messageCounter = 0;
+        let totalCost = 0;
 
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -555,7 +581,9 @@
             updateStatus();
             clearMessages();
             messageCounter = 0;
+            totalCost = 0;
             isFinished = false;
+            updateTotalCost();
             
             // 첫 메시지 자동 전송
             startConversation();
@@ -620,7 +648,7 @@
             await sendMessageToAPI('');
         }
 
-        function addMessage(content, isUser) {
+        function addMessage(content, isUser, tokenUsage = null) {
             const container = document.getElementById('chatContainer');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
@@ -638,6 +666,21 @@
             
             wrapperDiv.appendChild(labelDiv);
             wrapperDiv.appendChild(contentDiv);
+            
+            // AI 메시지이고 토큰 사용량 정보가 있으면 비용 표시
+            if (!isUser && tokenUsage && tokenUsage.current_cost_krw) {
+                const costDiv = document.createElement('div');
+                costDiv.className = 'message-cost';
+                costDiv.innerHTML = `
+                    <span style="margin-left: 8px; color: #666;">₩${tokenUsage.current_cost_krw.toFixed(1)}</span>
+                `;
+                wrapperDiv.appendChild(costDiv);
+                
+                // 총 비용 업데이트
+                totalCost = tokenUsage.total_cost_krw;
+                updateTotalCost();
+            }
+            
             messageDiv.appendChild(wrapperDiv);
             
             container.appendChild(messageDiv);
@@ -647,6 +690,11 @@
                 messageCounter++;
                 updateStatus();
             }
+        }
+        
+        function updateTotalCost() {
+            const totalCostElement = document.getElementById('totalCost');
+            totalCostElement.textContent = `₩${totalCost.toFixed(1)}`;
         }
 
         async function sendMessage() {
@@ -698,8 +746,9 @@
                 // 로딩 제거
                 loadingDiv.remove();
                 
-                // 응답 메시지 표시
-                addMessage(data.reply, false);
+                // 응답 메시지 표시 (토큰 사용량 정보 포함)
+                const tokenUsage = data.state ? data.state.token_usage : null;
+                addMessage(data.reply, false, tokenUsage);
                 
                 // 진단 완료 확인
                 if (data.state && data.state.finished) {

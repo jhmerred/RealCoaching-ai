@@ -19,4 +19,6 @@ def chat(body: ChatIn, graph=Depends(get_graph), storage=Depends(get_storage)):
         if m.role == "assistant":
             reply = m.content
             break
+    
+    # 응답 생성 (토큰 정보는 state 안에 포함됨)
     return ChatOut(reply=reply, state=new_state.model_dump())

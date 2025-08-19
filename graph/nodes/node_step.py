@@ -1,6 +1,8 @@
 import json, re
-from ..state import State, Turn, Signals, Coverage, ScoreDetail, ScoreSummary
+import os
+from ..state import State, Turn, Signals, Coverage, ScoreDetail, ScoreSummary, TokenUsage
 from ..prompts.prompts_loader import render
+from ..utils.cost_calculator import calculate_cost
 from adapters_interface import LLM
 
 def clamp_int(x: int, lo: int, hi: int) -> int:
@@ -42,6 +44,32 @@ def step(state: State, llm: LLM) -> State:
         Turn(role="system", content=dynamic_prompt)
     ]
     raw = llm.text(messages_with_prompts)
+    
+    # 토큰 사용량 추적
+    if hasattr(llm, 'get_last_token_usage'):
+        token_data = llm.get_last_token_usage()
+        if token_data:
+            input_tokens = token_data.get('prompt_tokens', 0)
+            output_tokens = token_data.get('completion_tokens', 0)
+            
+            # 현재 응답 토큰 사용량
+            state.token_usage.current_input_tokens = input_tokens
+            state.token_usage.current_output_tokens = output_tokens
+            
+            # 비용 계산 (KRW로 반환됨)
+            model_name = os.getenv("MODEL_NAME", "gpt-4o-mini")
+            cost_krw = calculate_cost(model_name, input_tokens, output_tokens)
+            state.token_usage.current_cost_krw = cost_krw
+            
+            # 누적 토큰 사용량
+            state.token_usage.total_input_tokens += input_tokens
+            state.token_usage.total_output_tokens += output_tokens
+            state.token_usage.total_cost_krw += cost_krw
+            
+            print(f"현재 토큰: 입력={input_tokens}, 출력={output_tokens}, 비용=₩{cost_krw:.2f}")
+            print(f"누적 토큰: 입력={state.token_usage.total_input_tokens}, "
+                  f"출력={state.token_usage.total_output_tokens}, "
+                  f"총 비용=₩{state.token_usage.total_cost_krw:.2f}")
     
     print("--------------------------------------------------------------------------------------------------------")
     print(raw)

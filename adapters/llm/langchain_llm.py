@@ -35,4 +35,16 @@ class LangChainLLM:
                     langchain_messages.append(AIMessage(content=msg.content))
         
         response = self.llm.invoke(langchain_messages)
+        
+        # 토큰 사용량 추출 (response_metadata에 있는 경우)
+        self.last_token_usage = None
+        if hasattr(response, 'response_metadata'):
+            metadata = response.response_metadata
+            if 'token_usage' in metadata:
+                self.last_token_usage = metadata['token_usage']
+        
         return getattr(response, "content", str(response))
+    
+    def get_last_token_usage(self):
+        """마지막 호출의 토큰 사용량 반환"""
+        return self.last_token_usage
