@@ -6,11 +6,11 @@ class Turn(BaseModel):
     content: str
 
 class Signals(BaseModel):
-    safety: int = Field(0, ge=0, le=10)
-    mood: int = Field(0, ge=0, le=10)
-    culture: int = Field(0, ge=0, le=10)
-    ei: int = Field(0, ge=0, le=10)
-    leader_ei: int = Field(0, ge=0, le=10)
+    safety: int = Field(0, ge=0, le=5)
+    mood: int = Field(0, ge=0, le=5)
+    culture: int = Field(0, ge=0, le=5)
+    ei: int = Field(0, ge=0, le=5)
+    leader_ei: int = Field(0, ge=0, le=5)
 
 class Coverage(BaseModel):
     safety: int = Field(0, ge=0, le=100)
@@ -20,11 +20,11 @@ class Coverage(BaseModel):
     leader_ei: int = Field(0, ge=0, le=100)
 
 class CoverageGoal(BaseModel):
-    safety: int = Field(5, ge=0, le=100)
-    mood: int = Field(5, ge=0, le=100)
-    culture: int = Field(5, ge=0, le=100)
-    ei: int = Field(5, ge=0, le=100)
-    leader_ei: int = Field(5, ge=0, le=100)
+    safety: int = Field(80, ge=0, le=100)
+    mood: int = Field(80, ge=0, le=100)
+    culture: int = Field(80, ge=0, le=100)
+    ei: int = Field(80, ge=0, le=100)
+    leader_ei: int = Field(80, ge=0, le=100)
 
 class ScoreDetail(BaseModel):
     # 심리적 안전감 세부 점수 (각 0-5점)
@@ -79,11 +79,11 @@ class TokenUsage(BaseModel):
 
 class State(BaseModel):
     messages: List[Turn] = Field(default_factory=list)
-    signals: Signals = Signals()  # 이번 턴 측정값(0..10 정수)
+    signals: Signals = Signals()  # 이번 턴 측정값(0..5 정수)
     coverage: Coverage = Coverage()  # 역량별 누적 커버리지
     coverage_goal: CoverageGoal = CoverageGoal()  # 역량별 목표 커버리지
     score_detail: ScoreDetail = ScoreDetail()  # 세부 항목별 점수
     score_summary: ScoreSummary = ScoreSummary()  # 파트별 총점 및 전체 점수
     token_usage: TokenUsage = TokenUsage()  # 토큰 사용량 및 비용
     finished: bool = False
-    turn_budget: int = 3
+    turn_budget: int = 50
