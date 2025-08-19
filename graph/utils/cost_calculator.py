@@ -9,8 +9,8 @@ PRICING = {
         "output": 10.00   # $10.00 per 1M output tokens
     },
     "gpt-5-mini": {
-        "input": 0.25,    # $0.25 per 1M input tokens
-        "output": 2.00    # $2.00 per 1M output tokens
+        "input": 0.45,    # $0.25 per 1M input tokens
+        "output": 3.60    # $2.00 per 1M output tokens # priority
     },
     "gpt-4o-mini": {
         "input": 0.15,    # $0.15 per 1M input tokens

@@ -14,7 +14,12 @@ class LangChainLLM:
         model_name = model or os.getenv("MODEL_NAME", "gpt-5-mini")
         # if provider not specified, assume 'openai'
         self.model_ref = model_name if ":" in model_name else f"openai:{model_name}"
-        self.llm = init_chat_model(self.model_ref, temperature=temperature)
+        
+        self.llm = init_chat_model(
+            self.model_ref, 
+            temperature=temperature, 
+            service_tier="priority"  # Priority Processing 활성화
+        )
 
     def text(self, messages: List) -> str:
         """Process conversation messages with Turn objects.
