@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>리얼코칭 AI 감정진단 챗봇</title>
+    <link rel="icon" type="image/png" href="./logo/RealCoaching_logo_icon.png">
     <style>
         * {
             margin: 0;
@@ -32,19 +33,36 @@
         }
 
         .sidebar-header {
-            padding: 24px;
+            padding: 32px 24px;
             border-bottom: 1px solid #333;
+            text-align: center;
+            background: linear-gradient(135deg, #111 0%, #222 100%);
+        }
+
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
         }
 
         .sidebar-header h1 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            letter-spacing: -0.5px;
         }
 
         .sidebar-header p {
-            font-size: 13px;
-            color: #999;
+            font-size: 12px;
+            color: #aaa;
+            font-weight: 400;
+            opacity: 0.9;
         }
 
         .sidebar-content {
@@ -189,6 +207,14 @@
         .chat-header h2 {
             font-size: 16px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-icon {
+            width: 24px;
+            height: 24px;
         }
 
         .chat-container {
@@ -447,6 +473,33 @@
                 pointer-events: auto;
             }
 
+            .logo {
+                width: 120px;
+            }
+
+            .header-icon {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                width: 100px;
+                margin-bottom: 12px;
+            }
+            
+            .sidebar-header {
+                padding: 20px;
+            }
+            
+            .sidebar-header h1 {
+                font-size: 16px;
+            }
+            
+            .sidebar-header p {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -457,6 +510,7 @@
     <!-- 사이드바 -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
+            <img src="./logo/RealCoaching_logo_full.png" alt="RealCoaching Logo" class="logo">
             <h1>리얼코칭 AI 챗봇</h1>
             <p>감정진단 전문 AI - 한이</p>
         </div>
@@ -518,7 +572,10 @@
                 <span></span>
                 <span></span>
             </button>
-            <h2>대화창</h2>
+            <h2>
+                <img src="./logo/RealCoaching_logo_icon.png" alt="RealCoaching Icon" class="header-icon">
+                Test Session
+            </h2>
         </div>
 
         <div class="chat-container" id="chatContainer">
@@ -556,7 +613,7 @@
             });
         }
 
-        function setSession() {
+        async function setSession() {
             const sessionInput = document.getElementById('sessionId');
             const sessionId = sessionInput.value.trim();
             
@@ -565,12 +622,25 @@
                 return;
             }
 
-            currentSessionId = sessionId;
-            enableChat();
-            updateStatus();
-            
-            // 첫 메시지 자동 전송
-            startConversation();
+            // 기존 세션 데이터 조회 시도
+            try {
+                const response = await fetch(`http://localhost:8000/session/${sessionId}`);
+                if (response.ok) {
+                    const sessionData = await response.json();
+                    await restoreSession(sessionData);
+                } else if (response.status === 404) {
+                    // 새 세션으로 처리
+                    currentSessionId = sessionId;
+                    enableChat();
+                    updateStatus();
+                    startConversation();
+                } else {
+                    throw new Error('세션 조회 실패');
+                }
+            } catch (error) {
+                console.error('Session restore error:', error);
+                alert('세션 연결 중 오류가 발생했습니다.');
+            }
         }
 
         function generateSession() {
@@ -684,12 +754,48 @@
             messageDiv.appendChild(wrapperDiv);
             
             container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: 'smooth'
+            });
             
             if (isUser) {
                 messageCounter++;
                 updateStatus();
             }
+        }
+
+        function addRestoreMessage(content, isUser, tokenUsage = null) {
+            const container = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+            
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.className = 'message-wrapper';
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'message-label';
+            labelDiv.textContent = isUser ? '사용자' : '한이';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+            
+            wrapperDiv.appendChild(labelDiv);
+            wrapperDiv.appendChild(contentDiv);
+            
+            // AI 메시지이고 토큰 사용량 정보가 있으면 비용 표시
+            if (!isUser && tokenUsage && tokenUsage.current_cost_krw) {
+                const costDiv = document.createElement('div');
+                costDiv.className = 'message-cost';
+                costDiv.innerHTML = `
+                    <span style="margin-left: 8px; color: #666;">₩${tokenUsage.current_cost_krw.toFixed(1)}</span>
+                `;
+                wrapperDiv.appendChild(costDiv);
+            }
+            
+            messageDiv.appendChild(wrapperDiv);
+            container.appendChild(messageDiv);
         }
         
         function updateTotalCost() {
@@ -723,7 +829,12 @@
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'message assistant';
             loadingDiv.innerHTML = '<div class="message-wrapper"><div class="message-label">한이</div><div class="message-content">생각중...<span class="loading"></span></div></div>';
-            document.getElementById('chatContainer').appendChild(loadingDiv);
+            const container = document.getElementById('chatContainer');
+            container.appendChild(loadingDiv);
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: 'smooth'
+            });
             
             try {
                 const response = await fetch(API_URL, {
@@ -802,6 +913,45 @@
                 overlay.classList.remove('active');
             }
         });
+
+        async function restoreSession(sessionData) {
+            currentSessionId = sessionData.session_id;
+            const state = sessionData.state;
+            
+            // 메시지 수 초기화
+            messageCounter = 0;
+            totalCost = state.token_usage?.total_cost_krw || 0;
+            isFinished = state.finished || false;
+            
+            // 채팅 활성화 및 환영 메시지 제거
+            enableChat();
+            clearMessages();
+            
+            // 메시지 히스토리 복원
+            if (state.messages && state.messages.length > 0) {
+                for (const message of state.messages) {
+                    if (message.role === 'user') {
+                        addRestoreMessage(message.content, true);
+                        messageCounter++;
+                    } else if (message.role === 'assistant') {
+                        // 토큰 사용량 정보 추출 (최신 메시지에만 표시)
+                        const tokenUsage = message === state.messages[state.messages.length - 1] ? state.token_usage : null;
+                        addRestoreMessage(message.content, false, tokenUsage);
+                    }
+                }
+            }
+            
+            // 상태 업데이트
+            updateStatus();
+            updateTotalCost();
+            
+            // 완료된 세션이면 입력 비활성화
+            if (isFinished) {
+                document.getElementById('messageInput').placeholder = '진단이 완료되었습니다.';
+                document.getElementById('messageInput').disabled = true;
+                document.getElementById('sendButton').disabled = true;
+            }
+        }
 
         // 초기 상태 업데이트
         updateStatus();

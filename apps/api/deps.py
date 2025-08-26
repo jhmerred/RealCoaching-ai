@@ -3,11 +3,12 @@ from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv(), override=False)
 
 from adapters.llm.langchain_llm import LangChainLLM
-from adapters.storage.memory import InMemory
+from adapters.storage.sqlite import SQLiteStorage
 from graph.graph import build_graph
+import os
 
 _graph = None
-_storage = InMemory()
+_storage = SQLiteStorage(db_path=os.getenv("DB_PATH", "sessions.db"))
 _llm = LangChainLLM()
 
 def get_graph():

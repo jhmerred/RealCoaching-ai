@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from .routers import chat
@@ -15,8 +16,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 프로젝트 루트 디렉터리
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+
 # HTML 파일 경로
-HTML_FILE = Path(__file__).parent.parent.parent / "index.html"
+HTML_FILE = PROJECT_ROOT / "index.html"
+
+# Static 파일 서빙 (로고 이미지 등)
+app.mount("/logo", StaticFiles(directory=PROJECT_ROOT / "logo"), name="logo")
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_html():
