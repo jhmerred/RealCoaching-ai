@@ -1,0 +1,24 @@
+{
+  "name": "realcoaching-report-generator",
+  "version": "1.0.0",
+  "description": "PDF report generator for RealCoaching",
+  "main": "generate-pdf.js",
+  "scripts": {
+    "generate-pdf": "node generate-pdf.js",
+    "build-pages": "node build-all-pages.js"
+  },
+  "keywords": [
+    "pdf",
+    "report",
+    "puppeteer"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^23.0.0"
+  }
+}

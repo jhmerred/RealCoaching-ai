@@ -1,0 +1,222 @@
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .all-\[unset\] {
+    all: unset;
+  }
+}
+
+:root {
+  --rc-fe-flax-vercel-app-arial-narrow-font-family: "Arial", Helvetica;
+  --rc-fe-flax-vercel-app-arial-narrow-font-size: 12px;
+  --rc-fe-flax-vercel-app-arial-narrow-font-style: normal;
+  --rc-fe-flax-vercel-app-arial-narrow-font-weight: 400;
+  --rc-fe-flax-vercel-app-arial-narrow-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-arial-narrow-line-height: 16px;
+  --rc-fe-flax-vercel-app-noto-sans-KR-demilight-font-family: "Noto Sans KR",
+    Helvetica;
+  --rc-fe-flax-vercel-app-noto-sans-KR-demilight-font-size: 14px;
+  --rc-fe-flax-vercel-app-noto-sans-KR-demilight-font-style: normal;
+  --rc-fe-flax-vercel-app-noto-sans-KR-demilight-font-weight: 300;
+  --rc-fe-flax-vercel-app-noto-sans-KR-demilight-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-noto-sans-KR-demilight-line-height: 20px;
+  --rc-fe-flax-vercel-app-noto-sans-KR-medium-font-family: "Noto Sans KR",
+    Helvetica;
+  --rc-fe-flax-vercel-app-noto-sans-KR-medium-font-size: 16px;
+  --rc-fe-flax-vercel-app-noto-sans-KR-medium-font-style: normal;
+  --rc-fe-flax-vercel-app-noto-sans-KR-medium-font-weight: 500;
+  --rc-fe-flax-vercel-app-noto-sans-KR-medium-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-noto-sans-KR-medium-line-height: 24px;
+  --rc-fe-flax-vercel-app-semantic-button-font-family: "Noto Sans KR", Helvetica;
+  --rc-fe-flax-vercel-app-semantic-button-font-size: 16px;
+  --rc-fe-flax-vercel-app-semantic-button-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-button-font-weight: 500;
+  --rc-fe-flax-vercel-app-semantic-button-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-button-line-height: 24px;
+  --rc-fe-flax-vercel-app-semantic-cell-upper-font-family: "Noto Sans KR",
+    Helvetica;
+  --rc-fe-flax-vercel-app-semantic-cell-upper-font-size: 12px;
+  --rc-fe-flax-vercel-app-semantic-cell-upper-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-cell-upper-font-weight: 500;
+  --rc-fe-flax-vercel-app-semantic-cell-upper-letter-spacing: 0.6000000238418579px;
+  --rc-fe-flax-vercel-app-semantic-cell-upper-line-height: 16px;
+  --rc-fe-flax-vercel-app-semantic-code-font-family: "Consolas", Helvetica;
+  --rc-fe-flax-vercel-app-semantic-code-font-size: 12px;
+  --rc-fe-flax-vercel-app-semantic-code-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-code-font-weight: 400;
+  --rc-fe-flax-vercel-app-semantic-code-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-code-line-height: 16px;
+  --rc-fe-flax-vercel-app-semantic-data-font-family: "Noto Sans KR", Helvetica;
+  --rc-fe-flax-vercel-app-semantic-data-font-size: 14px;
+  --rc-fe-flax-vercel-app-semantic-data-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-data-font-weight: 500;
+  --rc-fe-flax-vercel-app-semantic-data-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-data-line-height: 20px;
+  --rc-fe-flax-vercel-app-semantic-heading-1-font-family: "Noto Sans KR",
+    Helvetica;
+  --rc-fe-flax-vercel-app-semantic-heading-1-font-size: 30px;
+  --rc-fe-flax-vercel-app-semantic-heading-1-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-heading-1-font-weight: 700;
+  --rc-fe-flax-vercel-app-semantic-heading-1-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-heading-1-line-height: 36px;
+  --rc-fe-flax-vercel-app-semantic-heading-2-font-family: "Noto Sans KR",
+    Helvetica;
+  --rc-fe-flax-vercel-app-semantic-heading-2-font-size: 24px;
+  --rc-fe-flax-vercel-app-semantic-heading-2-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-heading-2-font-weight: 700;
+  --rc-fe-flax-vercel-app-semantic-heading-2-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-heading-2-line-height: 32px;
+  --rc-fe-flax-vercel-app-semantic-heading-3-font-family: "Noto Sans KR",
+    Helvetica;
+  --rc-fe-flax-vercel-app-semantic-heading-3-font-size: 18px;
+  --rc-fe-flax-vercel-app-semantic-heading-3-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-heading-3-font-weight: 500;
+  --rc-fe-flax-vercel-app-semantic-heading-3-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-heading-3-line-height: 24px;
+  --rc-fe-flax-vercel-app-semantic-input-font-family: "Noto Sans KR", Helvetica;
+  --rc-fe-flax-vercel-app-semantic-input-font-size: 14px;
+  --rc-fe-flax-vercel-app-semantic-input-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-input-font-weight: 300;
+  --rc-fe-flax-vercel-app-semantic-input-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-input-line-height: normal;
+  --rc-fe-flax-vercel-app-semantic-item-font-family: "Noto Sans KR", Helvetica;
+  --rc-fe-flax-vercel-app-semantic-item-font-size: 16px;
+  --rc-fe-flax-vercel-app-semantic-item-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-item-font-weight: 300;
+  --rc-fe-flax-vercel-app-semantic-item-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-item-line-height: 24px;
+  --rc-fe-flax-vercel-app-semantic-label-font-family: "Noto Sans KR", Helvetica;
+  --rc-fe-flax-vercel-app-semantic-label-font-size: 14px;
+  --rc-fe-flax-vercel-app-semantic-label-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-label-font-weight: 500;
+  --rc-fe-flax-vercel-app-semantic-label-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-label-line-height: 20px;
+  --rc-fe-flax-vercel-app-semantic-link-font-family: "Noto Sans KR", Helvetica;
+  --rc-fe-flax-vercel-app-semantic-link-font-size: 16px;
+  --rc-fe-flax-vercel-app-semantic-link-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-link-font-weight: 500;
+  --rc-fe-flax-vercel-app-semantic-link-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-link-line-height: 24px;
+  --rc-fe-flax-vercel-app-semantic-options-font-family: "Noto Sans KR",
+    Helvetica;
+  --rc-fe-flax-vercel-app-semantic-options-font-size: 14px;
+  --rc-fe-flax-vercel-app-semantic-options-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-options-font-weight: 300;
+  --rc-fe-flax-vercel-app-semantic-options-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-options-line-height: 15.5px;
+  --rc-fe-flax-vercel-app-semantic-textarea-font-family: "Noto Sans KR",
+    Helvetica;
+  --rc-fe-flax-vercel-app-semantic-textarea-font-size: 14px;
+  --rc-fe-flax-vercel-app-semantic-textarea-font-style: normal;
+  --rc-fe-flax-vercel-app-semantic-textarea-font-weight: 300;
+  --rc-fe-flax-vercel-app-semantic-textarea-letter-spacing: 0px;
+  --rc-fe-flax-vercel-app-semantic-textarea-line-height: 20px;
+}
+
+:root {
+  --animate-spin: spin 1s linear infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-fade-up {
+  animation: fade-up 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) infinite linear;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 8s infinite;
+}
+
+.animate-spin {
+  animation: var(--animate-spin);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes image-glow {
+  0% {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.74, 0.25, 0.76, 1);
+  }
+
+  10% {
+    opacity: 0.7;
+    animation-timing-function: cubic-bezier(0.12, 0.01, 0.08, 0.99);
+  }
+
+  to {
+    opacity: 0.4;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  90%,
+  to {
+    background-position: calc(-100% - var(--shimmer-width)) 0;
+  }
+
+  30%,
+  60% {
+    background-position: calc(100% + var(--shimmer-width)) 0;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translate(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  0% {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
+}
