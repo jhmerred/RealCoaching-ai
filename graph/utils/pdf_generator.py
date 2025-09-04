@@ -4,62 +4,87 @@ import os
 from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 
-def send_to_pdf_server(pdf_data: Dict[str, Any], session_id: Optional[str] = None) -> Dict[str, Any]:
+def send_to_pdf_server(pdf_data: Dict[str, Any], session_id: Optional[str] = None, retry_count: int = 3) -> Dict[str, Any]:
     """
     점수 계산 결과를 PDF 생성 서버로 전송합니다.
     
     Args:
         pdf_data: PDF 생성용 데이터 (data와 config 포함)
         session_id: 세션 ID (파일명에 포함)
+        retry_count: 재시도 횟수
         
     Returns:
         PDF 서버 응답 또는 에러
     """
     pdf_server_url = os.getenv("PDF_SERVER_URL", "http://localhost:3000/api/generate-pdf")
+    timeout_seconds = int(os.getenv("PDF_TIMEOUT", "120"))  # 환경변수에서 타임아웃 읽기 (기본 120초)
     
     headers = {
         "Content-Type": "application/json"
     }
     
-    try:
-        response = requests.post(
-            pdf_server_url,
-            json=pdf_data,
-            headers=headers,
-            timeout=60
-        )
-        response.raise_for_status()
-        
-        # PDF 파일 바이너리 저장 (선택적)
-        if response.headers.get('Content-Type') == 'application/pdf':
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    # 재시도 로직
+    for attempt in range(retry_count):
+        try:
+            print(f"PDF 생성 시도 {attempt + 1}/{retry_count} (타임아웃: {timeout_seconds}초)")
             
-            # 세션 ID가 있으면 파일명에 포함
-            if session_id:
-                # 세션 ID의 처음 8자리만 사용
-                short_session_id = session_id[:8] if len(session_id) > 8 else session_id
-                pdf_path = f"generated_report_{timestamp}_{short_session_id}.pdf"
+            response = requests.post(
+                pdf_server_url,
+                json=pdf_data,
+                headers=headers,
+                timeout=timeout_seconds
+            )
+            response.raise_for_status()
+            
+            # PDF 파일 바이너리 저장 (선택적)
+            if response.headers.get('Content-Type') == 'application/pdf':
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                
+                # 세션 ID가 있으면 파일명에 포함
+                if session_id:
+                    # 세션 ID의 처음 8자리만 사용
+                    short_session_id = session_id[:8] if len(session_id) > 8 else session_id
+                    pdf_path = f"generated_report_{timestamp}_{short_session_id}.pdf"
+                else:
+                    pdf_path = f"generated_report_{timestamp}.pdf"
+                
+                with open(pdf_path, 'wb') as f:
+                    f.write(response.content)
+                print(f"PDF 생성 성공: {pdf_path}")
+                return {"status": "success", "pdf_path": pdf_path}
             else:
-                pdf_path = f"generated_report_{timestamp}.pdf"
+                # JSON 응답 처리
+                result = response.json()
+                if result.get("status") == "success":
+                    print("PDF 생성 성공 (서버 응답)")
+                return result
+                
+        except requests.exceptions.Timeout:
+            print(f"PDF 서버 타임아웃 (시도 {attempt + 1}/{retry_count})")
+            if attempt < retry_count - 1:
+                wait_time = (attempt + 1) * 5  # 5초, 10초, 15초 대기
+                print(f"{wait_time}초 후 재시도...")
+                import time
+                time.sleep(wait_time)
+            else:
+                print("모든 재시도 실패 - PDF 서버 타임아웃")
+                return {"status": "error", "message": "PDF server timeout after retries"}
             
-            with open(pdf_path, 'wb') as f:
-                f.write(response.content)
-            print(f"PDF 생성 성공: {pdf_path}")
-            return {"status": "success", "pdf_path": pdf_path}
-        else:
-            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"PDF 서버 전송 실패 (시도 {attempt + 1}/{retry_count}): {str(e)}")
+            if attempt < retry_count - 1:
+                wait_time = (attempt + 1) * 3
+                print(f"{wait_time}초 후 재시도...")
+                import time
+                time.sleep(wait_time)
+            else:
+                return {"status": "error", "message": str(e)}
         
-    except requests.exceptions.Timeout:
-        print("PDF 서버 타임아웃")
-        return {"status": "error", "message": "PDF server timeout"}
-        
-    except requests.exceptions.RequestException as e:
-        print(f"PDF 서버 전송 실패: {str(e)}")
-        return {"status": "error", "message": str(e)}
+        except Exception as e:
+            print(f"PDF 생성 중 오류: {str(e)}")
+            return {"status": "error", "message": str(e)}
     
-    except Exception as e:
-        print(f"PDF 생성 중 오류: {str(e)}")
-        return {"status": "error", "message": str(e)}
+    return {"status": "error", "message": "Failed after all retries"}
 
 
 def extract_user_info(conversation: list) -> Dict[str, str]:
