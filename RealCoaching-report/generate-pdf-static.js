@@ -46,7 +46,8 @@ class StaticPDFGenerator {
       headerTemplate = '',
       footerTemplate = '',
       waitTime = 2000,
-      scale = 1  // PDF 스케일 추가
+      scale = 1,  // PDF 스케일 추가
+      concurrency = 12  // 동시 처리 페이지 수 (기본값: 12)
     } = options;
 
     try {
@@ -63,28 +64,30 @@ class StaticPDFGenerator {
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
 
-      const page = await this.browser.newPage();
-      await page.setViewport({ width: 594, height: 841 });
-
-      // 3. 각 페이지 처리
-      const pdfPages = [];
+      // 3. 각 페이지 병렬 처리
+      console.log('🚀 Processing pages in parallel...');
+      console.log(`⚡ Concurrency: ${concurrency} pages at once`);
       
-      for (let i = 1; i <= 12; i++) {
-        console.log(`\n📄 Processing page ${i}...`);
+      // 페이지별 브라우저 탭 생성 함수
+      const processPage = async (pageNum) => {
+        const pageTab = await this.browser.newPage();
+        await pageTab.setViewport({ width: 594, height: 841 });
         
-        const url = `http://localhost:${port}/page-${i}`;
+        const url = `http://localhost:${port}/page-${pageNum}`;
         
         try {
+          console.log(`📄 Processing page ${pageNum}...`);
+          
           // 페이지 로드
-          await page.goto(url, { 
+          await pageTab.goto(url, { 
             waitUntil: 'networkidle0',
             timeout: 30000 
           });
 
           // 데이터 주입
-          if (data[`page${i}`]) {
-            console.log(`  💉 Injecting data for page ${i}`);
-            await page.evaluate((pageData) => {
+          if (data[`page${pageNum}`]) {
+            console.log(`  💉 Injecting data for page ${pageNum}`);
+            await pageTab.evaluate((pageData) => {
               // 전역 변수 설정
               window.reportData = pageData;
               
@@ -121,15 +124,15 @@ class StaticPDFGenerator {
               
               // 커스텀 이벤트 발생
               document.dispatchEvent(new CustomEvent('dataInjected', { detail: pageData }));
-            }, data[`page${i}`]);
+            }, data[`page${pageNum}`]);
             
             // 렌더링 대기
             await new Promise(resolve => setTimeout(resolve, waitTime));
           }
 
           // PDF 생성
-          console.log(`  📸 Generating PDF for page ${i}`);
-          const pdfBuffer = await page.pdf({
+          console.log(`  📸 Generating PDF for page ${pageNum}`);
+          const pdfBuffer = await pageTab.pdf({
             width: '594px',  // 피그마와 동일한 크기 지정
             height: '841px', // A4 크기 (72dpi 기준)
             printBackground,
@@ -141,21 +144,43 @@ class StaticPDFGenerator {
             preferCSSPageSize: false  // CSS 페이지 크기 무시
           });
 
-          pdfPages.push(pdfBuffer);
-          console.log(`  ✅ Page ${i} completed`);
+          await pageTab.close();
+          console.log(`  ✅ Page ${pageNum} completed`);
+          return { pageNum, pdfBuffer };
           
         } catch (error) {
-          console.error(`  ❌ Error processing page ${i}:`, error.message);
-          // 빈 페이지 추가
-          const errorPdf = await page.pdf({
+          console.error(`  ❌ Error processing page ${pageNum}:`, error.message);
+          await pageTab.close();
+          
+          // 에러 시 빈 페이지 생성
+          const errorTab = await this.browser.newPage();
+          const errorPdf = await errorTab.pdf({
             width: '594px',
             height: '841px',
             printBackground: false,
             margin
           });
-          pdfPages.push(errorPdf);
+          await errorTab.close();
+          return { pageNum, pdfBuffer: errorPdf };
         }
+      };
+
+      // 배치 단위로 병렬 처리
+      const allPages = Array.from({ length: 12 }, (_, i) => i + 1);
+      const pdfResults = [];
+      
+      for (let i = 0; i < allPages.length; i += concurrency) {
+        const batch = allPages.slice(i, i + concurrency);
+        console.log(`\n🔄 Processing batch: pages ${batch.join(', ')}`);
+        
+        const batchPromises = batch.map(pageNum => processPage(pageNum));
+        const batchResults = await Promise.all(batchPromises);
+        pdfResults.push(...batchResults);
       }
+      
+      // 페이지 순서대로 정렬
+      pdfResults.sort((a, b) => a.pageNum - b.pageNum);
+      const pdfPages = pdfResults.map(r => r.pdfBuffer);
 
       // 4. PDF 병합
       console.log('\n📚 Merging PDF pages...');
