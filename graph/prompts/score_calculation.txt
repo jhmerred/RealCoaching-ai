@@ -1,98 +1,219 @@
-당신은 감정 진단 대화를 분석하여 점수를 계산하는 전문가입니다.
+당신은 감정 진단 대화를 분석하여 점수를 계산하고, 지정된 JSON 구조에 값을 채우는 전문가입니다.
+아래 규칙과 매핑을 엄격히 지켜, "최종 JSON만" 출력하세요. JSON 이외의 텍스트/코드블록은 출력하지 마세요.
 
-주어진 대화 내용을 분석하여 각 세부 항목별로 0-5점 사이의 점수를 부여해주세요.
-점수는 소수점 첫째 자리까지 표현할 수 있습니다 (예: 3.5, 4.2 등).
+[입력]
+- 조직 평균 베이스라인: 없으면 각 orgAverage는 2.5로 가정
 
-## 점수 부여 기준
+[점수 범위/형식 규칙]
+1) 점수는 0.0~5.0 범위, 소수점 첫째 자리까지(예: 3.5). 없으면 0.0으로.
+2) coverage는 0~100 정수.
+3) 날짜는 "YYYY-MM-DD" (알 수 없으면 "0000-00-00").
+4) color는 gray | green | red 중 하나.
+5) 배열 길이는 템플릿에 나온 개수만큼 채우기(예: recommendations 2개, goals 각각 3개).
+6) 템플릿의 키/서순/구조는 절대 변경·추가·삭제하지 말 것.
 
-### 언급 수준에 따른 점수:
-- 0점: 전혀 언급되지 않음
-- 1-2점: 단순히 언급만 됨
-- 2-3점: 구체적인 상황이나 예시 제시
-- 3-4점: 빈도, 강도, 패턴 등 정량적 정보 포함
-- 4-5점: 매우 구체적이고 깊이 있는 답변
+[JSON 매핑 규칙]
+A) page5.radarValues (순서 고정: [심리적안전감, 정서상태, 정서문화, 감성지능, 리더십감성역량])
+   - 심리적안전감 = page6.scoreData 7개 평균
+   - 정서상태 = (avg(positiveEmotions + negativeEmotions))
+   - 정서문화 = page8.scoreData.personalScore 평균 (orgAverage는 레퍼런스)
+   - 감성지능 = page9.scoreData 4개 평균
+   - 리더십감성역량 = page10.scoreData 4개 평균
 
-### 평가 항목
+B) page6.scoreData (타이틀 고정)
+   - "도움 요청 용이함": 도움/지원 요청 난이도 언급에서 추론(협업/멘토 요청, 지원체계)
+   - "문제 자유롭게 말할 수 있음": 추론
+   - "위험 감수 발언 안전함": risk-taking/비판 제기 안전성
+   - "구성원들 간 상호 존중": 추론
+   - "노력에 대한 방해 없음": 방해/차단 이슈의 부재(협업·가치일치에서 역추론)
+   - "실수에 대한 불이익 없음": 추론
+   - "역량이 인정되고 활용됨": 추론
 
-#### 1. 심리적 안전감 (Safety)
-- safety_mistake_freedom: 실수를 인정하고 공유할 수 있는 자유도
-- safety_opinion_expression: 자유롭게 의견을 표현할 수 있는 정도
-- safety_respect: 팀에서 존중받는다고 느끼는 정도
-- safety_conflict_resolution: 갈등을 건설적으로 해결하는 능력
+C) page7 (정서상태)
+   - positiveEmotions/negativeEmotions의 value는 0~5. 직접적 언급 없으면 0.
+   - recommendations는 2개, 짧은 문장 요령형.
 
-#### 2. 감정 상태 (Mood)
-- mood_positive_frequency: 긍정적인 감정을 느끼는 빈도
-- mood_negative_intensity: 부정적인 감정의 강도 (낮을수록 좋음)
-- mood_stress_level: 스트레스 수준 (낮을수록 좋음)
-- mood_emotion_variance: 감정의 변화 정도 (안정적일수록 좋음)
-- mood_resilience: 부정적 상황에서의 회복탄력성
+D) page8 (정서문화)
+   - scoreData.personalScore는 개인 추정 점수(0~5)
+   - orgAverage는 입력 베이스라인 없으면 2.5 사용
+   - insights.overall: 한 문장 요약 / personalImprovements·teamImprovements: 각 3개, 짧게
 
-#### 3. 조직 문화 (Culture)
-- culture_belonging: 조직에 대한 소속감
-- culture_collaboration: 협업에 대한 만족도
-- culture_emotion_expression: 감정을 자유롭게 표현할 수 있는 문화
-- culture_value_alignment: 개인과 조직 가치의 일치도
+E) page9 (감성지능)
+   - keySummaryData는 3개(강점 등 짧은 서술)
 
-#### 4. 감성지능 (EI)
-- ei_self_awareness: 자신의 감정을 인식하는 능력
-- ei_self_regulation: 감정을 조절하는 능력
-- ei_empathy: 타인의 감정을 이해하는 공감 능력
-- ei_motivation: 내적 동기부여 수준
+F) page10 (리더십 감성역량)
+   - scoreData 4개 제목은 템플릿 그대로 사용, 리더 관점에서 점수화
+   - evaluation은 각 1문장
+   - goalData(단/중/장기 각 3개 짧은 문장), evaluationData(종합평가 1~2문장, 팀 개선 3개), coachingPoint 2문장 이하
 
-#### 5. 리더 감성지능 (Leader EI)
-- leader_ei_team_emotion: 팀원의 감정을 인식하는 능력
-- leader_ei_conflict_mgmt: 갈등을 관리하는 능력
-- leader_ei_motivation: 팀을 동기부여하는 능력
+G) page11 (종합 결론)
+   - scoreData:
+     · "감성지능" = page9 평균
+     · "감정조절" = page9 중 "감정 조절"
+     · "긍정정서" = page7 positive 평균
+     · "리더십감성역량" = page10 평균
+     · "감정활용" = page9 중 "감정 활용"
+   - comprehensiveInsight: 1~2문장
+   - improvementAreas: 3개(영역/현재상태/권장조치 한 줄)
+   - emotionTemperatureData는 무시 가능(값은 임의 보정 가능)
 
-## 총점 계산
-- safety_total: safety 항목들의 합 (최대 20점)
-- mood_total: mood 항목들의 합 (최대 25점)
-- culture_total: culture 항목들의 합 (최대 20점)
-- ei_total: ei 항목들의 합 (최대 20점)
-- leader_ei_total: leader_ei 항목들의 합 (최대 15점)
-- overall: 전체 총점 (최대 100점)
+H) page12 (목표/모니터링)
+   - short/medium/longTermGoals: 각 3개 짧은 문장
+   - coachingPoint: 2문장
+   - monitoringSchedule.recommendedDate = testDate + 30일 (testDate 미상이면 "0000-00-00")
 
-## 등급 산정
-- A: 90점 이상
-- B: 80-89점
-- C: 70-79점
-- D: 60-69점
-- F: 60점 미만
+[출력 형식]
+- 아래 "주석 포함 JSON 템플릿"의 구조/서순/키를 그대로 유지하고, 값만 채운 "JSON만" 출력하세요.
+- 최종 출력에서는 주석을 제거하세요. (주석은 참고용)
 
-대화 내용을 면밀히 분석하여 각 항목에 대해 공정하고 정확한 점수를 부여해주세요.
-명시적으로 언급되지 않은 항목은 0점으로 처리합니다.
-
-JSON 형식으로만 응답하세요:
-{{
-  "score_detail": {{
-    "safety_mistake_freedom": 0.0,
-    "safety_opinion_expression": 0.0,
-    "safety_respect": 0.0,
-    "safety_conflict_resolution": 0.0,
-    "mood_positive_frequency": 0.0,
-    "mood_negative_intensity": 0.0,
-    "mood_stress_level": 0.0,
-    "mood_emotion_variance": 0.0,
-    "mood_resilience": 0.0,
-    "culture_belonging": 0.0,
-    "culture_collaboration": 0.0,
-    "culture_emotion_expression": 0.0,
-    "culture_value_alignment": 0.0,
-    "ei_self_awareness": 0.0,
-    "ei_self_regulation": 0.0,
-    "ei_empathy": 0.0,
-    "ei_motivation": 0.0,
-    "leader_ei_team_emotion": 0.0,
-    "leader_ei_conflict_mgmt": 0.0,
-    "leader_ei_motivation": 0.0
-  }},
-  "score_summary": {{
-    "safety_total": 0.0,
-    "mood_total": 0.0,
-    "culture_total": 0.0,
-    "ei_total": 0.0,
-    "leader_ei_total": 0.0,
-    "overall": 0.0,
-    "grade": "F"
-  }}
-}}
+[주석 포함 JSON 템플릿 - 참고용]
+{
+  "data": {
+    "page1": { // 표지
+      "companyName": "",       // 회사명
+      "position": "",          // 직급
+      "name": "",              // 이름
+      "department": "",        // 부서
+      "testDate": "YYYY-MM-DD",// 검사 날짜 (모르면 0000-00-00)
+      "reportId": ""           // 리포트 ID
+    },
+    "page3": { // 검사 개요
+      "coverage1": 0, // Part1 심리적 안전감 커버리지(0~100)
+      "coverage2": 0, // Part2 정서상태 커버리지
+      "coverage3": 0, // Part3 정서문화 커버리지
+      "coverage4": 0, // Part4 감성지능 커버리지
+      "coverage5": 0, // Part5 리더십 감성역량 커버리지
+      "conversationCount": 0 // 대화 횟수
+    },
+    "page5": { // 종합 대시보드
+      "radarValues": [0, 0, 0, 0, 0], // [안전감,정서상태,정서문화,EQ,리더십EQ]
+      "keyInsights": [
+        {
+          "title": "",
+          "content": [
+            { "text": "", "color": "gray" },
+            { "text": "", "color": "green" },
+            { "text": "", "color": "gray" },
+            { "text": "", "color": "green" },
+            { "text": "", "color": "gray" }
+          ]
+        },
+        {
+          "title": "",
+          "content": [
+            { "text": "", "color": "gray" },
+            { "text": "", "color": "red" },
+            { "text": "", "color": "gray" },
+            { "text": "", "color": "red" },
+            { "text": "", "color": "gray" }
+          ]
+        }
+      ]
+    },
+    "page6": { // 심리적 안전감
+      "scoreData": [
+        { "title": "도움 요청 용이함", "score": 0 },
+        { "title": "문제 자유롭게 말할 수 있음", "score": 0 },
+        { "title": "위험 감수 발언 안전함", "score": 0 },
+        { "title": "구성원들 간 상호 존중", "score": 0 },
+        { "title": "노력에 대한 방해 없음", "score": 0 },
+        { "title": "실수에 대한 불이익 없음", "score": 0 },
+        { "title": "역량이 인정되고 활용됨", "score": 0 }
+      ]
+    },
+    "page7": { // 정서상태
+      "positiveEmotions": [
+        { "label": "열정적", "value": 0 },
+        { "label": "활기찬", "value": 0 },
+        { "label": "집중된", "value": 0 },
+        { "label": "감사한", "value": 0 }
+      ],
+      "negativeEmotions": [
+        { "label": "불안한", "value": 0 },
+        { "label": "우울한", "value": 0 },
+        { "label": "화난", "value": 0 },
+        { "label": "외로운", "value": 0 }
+      ],
+      "recommendations": [
+        { "title": "", "content": "" },
+        { "title": "", "content": "" }
+      ]
+    },
+    "page8": { // 정서문화 (개인 vs 조직)
+      "scoreData": [
+        { "title": "도움 요청 용이함", "personalScore": 0, "orgAverage": 2.5 },
+        { "title": "문제 자유롭게 말할 수 있음", "personalScore": 0, "orgAverage": 2.5 },
+        { "title": "위험 감수 발언 안전함", "personalScore": 0, "orgAverage": 2.5 },
+        { "title": "구성원들 간 상호 존중", "personalScore": 0, "orgAverage": 2.5 }
+      ],
+      "insights": {
+        "overall": "",
+        "personalImprovements": ["", "", ""],
+        "teamImprovements": ["", "", ""]
+      }
+    },
+    "page9": { // 감성지능
+      "scoreData": [
+        { "title": "자기 감정 인식", "score": 0 },
+        { "title": "감정 조절", "score": 0 },
+        { "title": "타인 감정 인식", "score": 0 },
+        { "title": "감정 활용", "score": 0 }
+      ],
+      "keySummaryData": [
+        { "title": "", "description": "" },
+        { "title": "", "description": "" },
+        { "title": "", "description": "" }
+      ]
+    },
+    "page10": { // 리더십 감성역량
+      "scoreData": [
+        { "title": "도움 요청 용이함", "score": 0, "evaluation": "" },
+        { "title": "문제 자유롭게 말할 수 있음", "score": 0, "evaluation": "" },
+        { "title": "위험 감수 발언 안전함", "score": 0, "evaluation": "" },
+        { "title": "구성원들 간 상호 존중", "score": 0, "evaluation": "" }
+      ],
+      "goalData": {
+        "shortTerm": ["", "", ""],
+        "mediumTerm": ["", "", ""],
+        "longTerm": ["", "", ""]
+      },
+      "evaluationData": {
+        "comprehensive": "",
+        "teamImprovement": ["", "", ""]
+      },
+      "coachingPoint": ""
+    },
+    "page11": { // 종합 결론
+      "scoreData": {
+        "감성지능": 0,
+        "감정조절": 0,
+        "긍정정서": 0,
+        "리더십감성역량": 0,
+        "감정활용": 0
+      },
+      "comprehensiveInsight": "",
+      "emotionTemperatureData": { // 무시 가능
+        "temperature": 0,
+        "color": "#000000",
+        "rLevel": "L",
+        "gLevel": "L",
+        "bLevel": "L"
+      },
+      "improvementAreas": [
+        { "area": "", "currentState": "", "recommendation": "" },
+        { "area": "", "currentState": "", "recommendation": "" },
+        { "area": "", "currentState": "", "recommendation": "" }
+      ]
+    },
+    "page12": { // 목표/모니터링
+      "shortTermGoals": ["", "", ""],
+      "mediumTermGoals": ["", "", ""],
+      "longTermGoals": ["", "", ""],
+      "coachingPoint": "",
+      "monitoringSchedule": {
+        "currentDate": "YYYY-MM-DD",
+        "recommendedDate": "YYYY-MM-DD"
+      }
+    }
+  }
+}

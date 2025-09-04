@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from .routers import chat
+from .routers import chat, pdf
 
 app = FastAPI(title="One-Node LangGraph API")
 
@@ -32,3 +32,4 @@ async def serve_html():
         return f.read()
 
 app.include_router(chat.router, prefix="")
+app.include_router(pdf.router, prefix="")

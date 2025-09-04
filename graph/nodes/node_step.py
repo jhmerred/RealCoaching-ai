@@ -1,8 +1,10 @@
 import json, re
 import os
-from ..state import State, Turn, Signals, Coverage, ScoreDetail, ScoreSummary, TokenUsage
+from datetime import datetime
+from ..state import State, Turn, Signals, Coverage, TokenUsage
 from ..prompts.prompts_loader import render
 from ..utils.cost_calculator import calculate_cost
+from ..utils.pdf_generator import send_to_pdf_server, prepare_result_for_pdf
 from adapters_interface import LLM
 
 def clamp_int(x: int, lo: int, hi: int) -> int:
@@ -113,7 +115,7 @@ def step(state: State, llm: LLM) -> State:
 
 def calculate_final_score(state: State, llm: LLM) -> State:
     """
-    대화가 종료되었을 때 점수를 계산합니다.
+    대화가 종료되었을 때 점수를 계산하고 PDF 서버로 전송합니다.
     """
     # 점수 계산 프롬프트 로드
     score_prompt = render("score_calculation.txt")
@@ -133,88 +135,48 @@ def calculate_final_score(state: State, llm: LLM) -> State:
     raw_score = llm.text(score_messages)
     
     print("\n=== 점수 계산 중 ===")
-    print(raw_score)
+    print(raw_score[:500] + "..." if len(raw_score) > 500 else raw_score)  # 로그 축약
     
     try:
-        # JSON 파싱
+        # JSON 파싱 (프롬프트에서 직접 반환된 형식 사용)
         result = json.loads(raw_score)
         
-        # ScoreDetail 업데이트
-        score_detail_data = result.get("score_detail", {})
-        score_detail = ScoreDetail(**score_detail_data)
+        # 사용자 정보 (실제 환경에서는 별도 소스에서 가져와야 함)
+        user_info = {
+            "companyName": os.getenv("COMPANY_NAME", "RealCoaching"),
+            "position": os.getenv("USER_POSITION", "팀장"),
+            "name": os.getenv("USER_NAME", "테스터"),
+            "department": os.getenv("USER_DEPARTMENT", "개발팀"),
+            "testDate": datetime.now().strftime("%Y-%m-%d"),
+            "reportId": f"RC-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+        }
         
-        # 각 카테고리별 총점 계산
-        safety_total = (
-            score_detail.safety_mistake_freedom +
-            score_detail.safety_opinion_expression +
-            score_detail.safety_respect +
-            score_detail.safety_conflict_resolution
-        )
+        # PDF 생성을 위한 데이터 준비
+        pdf_data = prepare_result_for_pdf(state.messages, result, user_info)
         
-        mood_total = (
-            score_detail.mood_positive_frequency +
-            score_detail.mood_negative_intensity +
-            score_detail.mood_stress_level +
-            score_detail.mood_emotion_variance +
-            score_detail.mood_resilience
-        )
+        # PDF 서버로 전송 (세션 ID 포함)
+        session_id = state.session_id if hasattr(state, 'session_id') and state.session_id else None
+        pdf_response = send_to_pdf_server(pdf_data, session_id)
         
-        culture_total = (
-            score_detail.culture_belonging +
-            score_detail.culture_collaboration +
-            score_detail.culture_emotion_expression +
-            score_detail.culture_value_alignment
-        )
+        # State에 PDF 결과 저장 (선택적)
+        state.pdf_result = pdf_response
         
-        ei_total = (
-            score_detail.ei_self_awareness +
-            score_detail.ei_self_regulation +
-            score_detail.ei_empathy +
-            score_detail.ei_motivation
-        )
-        
-        leader_ei_total = (
-            score_detail.leader_ei_team_emotion +
-            score_detail.leader_ei_conflict_mgmt +
-            score_detail.leader_ei_motivation
-        )
-        
-        overall = safety_total + mood_total + culture_total + ei_total + leader_ei_total
-        
-        # 등급 계산
-        if overall >= 90:
-            grade = "A"
-        elif overall >= 80:
-            grade = "B"
-        elif overall >= 70:
-            grade = "C"
-        elif overall >= 60:
-            grade = "D"
+        if pdf_response.get("status") == "error":
+            print(f"PDF 생성 실패: {pdf_response.get('message')}")
         else:
-            grade = "F"
+            print(f"\n=== PDF 생성 완료 ===")
+            if pdf_response.get("pdf_path"):
+                print(f"PDF 파일: {pdf_response['pdf_path']}")
         
-        score_summary = ScoreSummary(
-            safety_total=safety_total,
-            mood_total=mood_total,
-            culture_total=culture_total,
-            ei_total=ei_total,
-            leader_ei_total=leader_ei_total,
-            overall=overall,
-            grade=grade
-        )
-        
-        # State 업데이트
-        state.score_detail = score_detail
-        state.score_summary = score_summary
-        
-        print(f"\n=== 진단 점수 계산 완료 ===")
-        print(f"총점: {overall:.1f}/100")
-        print(f"등급: {grade}")
-        print(f"- 심리적 안전감: {safety_total:.1f}/20")
-        print(f"- 감정 상태: {mood_total:.1f}/25")
-        print(f"- 조직 문화: {culture_total:.1f}/20")
-        print(f"- 감성지능: {ei_total:.1f}/20")
-        print(f"- 리더 감성지능: {leader_ei_total:.1f}/15")
+        # 결과 요약 출력
+        print(f"\n=== 진단 결과 요약 ===")
+        if "data" in result and "page11" in result["data"]:
+            score_data = result["data"]["page11"]["scoreData"]
+            print(f"감성지능: {score_data.get('감성지능', 0):.1f}/5.0")
+            print(f"감정조절: {score_data.get('감정조절', 0):.1f}/5.0")
+            print(f"긍정정서: {score_data.get('긍정정서', 0):.1f}/5.0")
+            print(f"리더십감성역량: {score_data.get('리더십감성역량', 0):.1f}/5.0")
+            print(f"감정활용: {score_data.get('감정활용', 0):.1f}/5.0")
         
     except json.JSONDecodeError as e:
         print(f"점수 계산 중 JSON 파싱 오류: {e}")

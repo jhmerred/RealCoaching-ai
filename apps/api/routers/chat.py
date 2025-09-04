@@ -8,6 +8,7 @@ router = APIRouter()
 @router.post("/chat", response_model=ChatOut)
 def chat(body: ChatIn, graph=Depends(get_graph), storage=Depends(get_storage)):
     state = storage.load(body.session_id)
+    state.session_id = body.session_id  # 세션 ID를 State에 저장
     state.messages.append(Turn(role="user", content=body.message))
     raw_out = graph.invoke(state)
     # Coerce dict to State
