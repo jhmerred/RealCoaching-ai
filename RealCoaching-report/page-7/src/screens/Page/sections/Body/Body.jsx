@@ -34,29 +34,71 @@ export const Body = ({ data = {} }) => {
   // 바 너비 계산 함수 (0~5 점수를 0~190px로 변환)
   const getBarWidth = (value) => (value / 5) * 190;
 
-  // 파이 차트 각도 계산
-  const total = parseFloat(positiveAverage) + parseFloat(negativeAverage);
-  const negativePercentage = (parseFloat(negativeAverage) / total) * 100;
+  // 1) 안전 퍼센트 계산
+  const toNum = (v) => (typeof v === 'number' ? v : parseFloat(String(v)));
+
+  function calcPercents(positiveAverage, negativeAverage) {
+    const pos = toNum(positiveAverage);
+    const neg = toNum(negativeAverage);
+    const total = pos + neg;
   
-  // SVG path 계산을 위한 함수 (stroke를 고려하여 radius 축소)
-  const calculatePieSlice = (startAngle, endAngle, radius = 98) => {
-    const startAngleRad = (startAngle * Math.PI) / 180;
-    const endAngleRad = (endAngle * Math.PI) / 180;
-    
-    const x1 = 100 + radius * Math.cos(startAngleRad);
-    const y1 = 100 + radius * Math.sin(startAngleRad);
-    const x2 = 100 + radius * Math.cos(endAngleRad);
-    const y2 = 100 + radius * Math.sin(endAngleRad);
-    
-    const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
-    
-    return `M 100 100 L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
-  };
+    if (!isFinite(total) || total <= 0) {
+      return { positivePct: 50, negativePct: 50, total: 0, isFallback: true };
+    }
   
-  // 각 섹션의 각도 계산 (9시 방향 = -90도에서 시작)
-  const negativeAngle = (negativePercentage / 100) * 360;
-  const positivePath = calculatePieSlice(-90, -90 + negativeAngle);
-  const negativePath = calculatePieSlice(-90 + negativeAngle, 270);
+    const clamp = (x) => Math.min(100, Math.max(0, x));
+    const negativePct = clamp((neg / total) * 100);
+    const positivePct = clamp(100 - negativePct);
+    return { positivePct, negativePct, total, isFallback: false };
+  }
+
+  const { positivePct, negativePct } = calcPercents(positiveAverage, negativeAverage);
+
+  // 2) 파이 슬라이스 path 계산 (0%/100% 안전 처리 포함)
+  const buildPieSlice = (startAngle, endAngle, radius = 98) => {
+    const cx = 100, cy = 100;
+    const EPS = 1e-4;
+  
+    const rawSpan = endAngle - startAngle;
+  
+    // 360°(또는 그에 준하는 값) → 풀서클
+    if (Math.abs(rawSpan) >= 360 - EPS) {
+      const r = radius;
+      return `M ${cx + r} ${cy}
+              A ${r} ${r} 0 1 1 ${cx - r} ${cy}
+              A ${r} ${r} 0 1 1 ${cx + r} ${cy}
+              Z`;
+    }
+  
+    // 정규화(0~360)
+    const norm = (a) => ((a % 360) + 360) % 360;
+    const span = norm(rawSpan);
+  
+    // 0%: 아무 것도 그리지 않음
+    if (span <= EPS) return '';
+  
+    // 일반 부채꼴
+    const s = (startAngle * Math.PI) / 180;
+    const e = (endAngle * Math.PI) / 180;
+    const x1 = cx + radius * Math.cos(s);
+    const y1 = cy + radius * Math.sin(s);
+    const x2 = cx + radius * Math.cos(e);
+    const y2 = cy + radius * Math.sin(e);
+    const largeArcFlag = span > 180 ? 1 : 0;
+    const sweepFlag = 1;
+  
+    return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} ${sweepFlag} ${x2} ${y2} Z`;
+  };  
+
+  // 3) 각도 계산 (9시 방향 = -90도에서 시작)
+  const start = -90;
+  const negativeAngle = (negativePct / 100) * 360;
+
+  // 주석과 변수명이 뒤바뀌어 보였어요. 헷갈리지 않게 이름을 맞추거나 주석을 수정하세요.
+  // negativePath: 부정정서 영역, positivePath: 긍정정서 영역
+  const negativePath = buildPieSlice(start, start + negativeAngle);
+  const positivePath = buildPieSlice(start + negativeAngle, start + 360);
+
 
   return (
     <div className="flex flex-col items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
@@ -91,21 +133,25 @@ export const Body = ({ data = {} }) => {
 
         <div className="relative w-[200px] h-[200px]">
           <svg viewBox="0 0 200 200" className="absolute inset-0" xmlns="http://www.w3.org/2000/svg">
-            {/* 부정정서 (분홍색) 부분 */}
-            <path
-              d={positivePath}
-              fill="#FFA099"
-              stroke="#F77F76"
-              strokeWidth="2"
-            />
-            
             {/* 긍정정서 (초록색) 부분 */}
-            <path
-              d={negativePath}
-              fill="#A4F18A"
-              stroke="#6CD764"
-              strokeWidth="2"
-            />
+            {positivePath && (
+              <path
+                d={positivePath}
+                fill="#A4F18A"
+                stroke="#6CD764"
+                strokeWidth="2"
+              />
+            )}
+
+            {/* 부정정서 (분홍색) 부분 */}
+            {negativePath && (
+              <path
+                d={negativePath}
+                fill="#FFA099"
+                stroke="#F77F76"
+                strokeWidth="2"
+              />
+            )}
           </svg>
         </div>
 
