@@ -17,7 +17,7 @@ def send_to_pdf_server(pdf_data: Dict[str, Any], session_id: Optional[str] = Non
         PDF 서버 응답 또는 에러
     """
     pdf_server_url = os.getenv("PDF_SERVER_URL", "http://localhost:3000/api/generate-pdf")
-    timeout_seconds = int(os.getenv("PDF_TIMEOUT", "120"))  # 환경변수에서 타임아웃 읽기 (기본 120초)
+    timeout_seconds = int(os.getenv("PDF_TIMEOUT", "180"))  # 환경변수에서 타임아웃 읽기 (기본 180초)
     
     headers = {
         "Content-Type": "application/json"

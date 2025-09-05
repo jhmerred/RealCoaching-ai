@@ -81,7 +81,7 @@ class StaticPDFGenerator {
           // 페이지 로드
           await pageTab.goto(url, { 
             waitUntil: 'networkidle0',
-            timeout: 30000 
+            timeout: 100000 
           });
 
           // 데이터 주입
