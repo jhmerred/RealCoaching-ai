@@ -1082,7 +1082,7 @@
                 <button onclick="downloadPDF()" class="pdf-download-btn" id="pdfDownloadBtn" disabled>
                     📄 PDF 보고서 다운로드
                 </button>
-                <div id="pdfStatus" class="pdf-status loading">⏳ PDF 생성 중...</div>
+                <div id="pdfStatus" class="pdf-status">⏳ PDF 생성 중...</div>
             `;
             
             container.appendChild(pdfContainer);
@@ -1116,7 +1116,7 @@
                     downloadBtn.disabled = false;
                 } else {
                     statusDiv.textContent = 'PDF 생성 중... 잠시만 기다려주세요.';
-                    statusDiv.className = 'pdf-status loading';
+                    statusDiv.className = 'pdf-status';
                     downloadBtn.disabled = true;
                     
                     // 3초 후 다시 확인 (진단 완료 상태일 때만)
@@ -1146,7 +1146,7 @@
             if (!statusDiv) return;
             
             statusDiv.textContent = '다운로드 중...';
-            statusDiv.className = 'pdf-status loading';
+            statusDiv.className = 'pdf-status';
             downloadBtn.disabled = true;
             
             try {
