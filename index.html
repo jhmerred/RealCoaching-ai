@@ -623,6 +623,14 @@
                 </div>
             </div>
             
+            <!-- 채팅 내보내기 섹션 -->
+            <div class="session-section">
+                <div class="section-title">대화 내보내기</div>
+                <button onclick="downloadChatAsTxt()" class="secondary" id="downloadChatBtn">
+                    💬 대화 내용 다운로드
+                </button>
+            </div>
+            
         </div>
         
         <!-- 하단 고정 상태 정보 -->
@@ -1080,7 +1088,7 @@
                 <h3>진단이 완료되었습니다!</h3>
                 <p>상세한 분석 결과를 PDF 보고서로 확인하세요.</p>
                 <button onclick="downloadPDF()" class="pdf-download-btn" id="pdfDownloadBtn" disabled>
-                    📄 PDF 보고서 다운로드
+                    📄 보고서 다운로드 (PDF + TXT)
                 </button>
                 <div id="pdfStatus" class="pdf-status">⏳ PDF 생성 중...</div>
             `;
@@ -1150,13 +1158,14 @@
             downloadBtn.disabled = true;
             
             try {
+                // 1. PDF 다운로드
                 const response = await fetch(`http://localhost:8000/pdf/${currentSessionId}`);
                 
                 if (!response.ok) {
                     throw new Error('PDF 다운로드 실패');
                 }
                 
-                // 파일 다운로드
+                // PDF 파일 다운로드
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -1167,6 +1176,11 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
+                
+                // 2. TXT 파일도 자동으로 다운로드 (약간의 지연 후)
+                setTimeout(() => {
+                    downloadChatAsTxtSilent();
+                }, 500);
                 
                 statusDiv.textContent = '다운로드가 완료되었습니다!';
                 statusDiv.className = 'pdf-status ready';
@@ -1186,6 +1200,106 @@
                 downloadBtn.disabled = false;
                 alert('PDF 다운로드 중 오류가 발생했습니다.');
             }
+        }
+        
+        // 조용히 TXT 다운로드 (알림 없이)
+        function downloadChatAsTxtSilent() {
+            const messages = [];
+            const messageElements = document.querySelectorAll('.message');
+            
+            if (messageElements.length === 0) {
+                return;
+            }
+            
+            // 세션 정보 추가
+            messages.push('='.repeat(50));
+            messages.push('리얼코칭 AI 채팅 기록');
+            messages.push('='.repeat(50));
+            messages.push(`세션 ID: ${currentSessionId || '없음'}`);
+            messages.push(`다운로드 일시: ${new Date().toLocaleString('ko-KR')}`);
+            messages.push(`총 메시지 수: ${messageElements.length}`);
+            messages.push('='.repeat(50));
+            messages.push('');
+            
+            // 각 메시지 내용 추출
+            messageElements.forEach((msgElement, index) => {
+                const isUser = msgElement.classList.contains('user');
+                const sender = isUser ? '사용자' : '한이';
+                const content = msgElement.querySelector('.message-content').textContent;
+                
+                messages.push(`[${index + 1}] ${sender}`);
+                messages.push('-'.repeat(30));
+                messages.push(content);
+                messages.push('');
+            });
+            
+            // TXT 파일 생성 및 다운로드
+            const txtContent = messages.join('\n');
+            const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            // 파일명 생성 (세션 ID 포함)
+            const sessionPart = currentSessionId ? currentSessionId.substring(0, 8) : 'no-session';
+            a.download = `realcoaching_chat_${sessionPart}.txt`;
+            
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+        
+        // 채팅 내용 TXT로 다운로드 함수
+        function downloadChatAsTxt() {
+            const messages = [];
+            const messageElements = document.querySelectorAll('.message');
+            
+            if (messageElements.length === 0) {
+                alert('다운로드할 대화 내용이 없습니다.');
+                return;
+            }
+            
+            // 세션 정보 추가
+            messages.push('='.repeat(50));
+            messages.push('리얼코칭 AI 채팅 기록');
+            messages.push('='.repeat(50));
+            messages.push(`세션 ID: ${currentSessionId || '없음'}`);
+            messages.push(`다운로드 일시: ${new Date().toLocaleString('ko-KR')}`);
+            messages.push(`총 메시지 수: ${messageElements.length}`);
+            messages.push('='.repeat(50));
+            messages.push('');
+            
+            // 각 메시지 내용 추출
+            messageElements.forEach((msgElement, index) => {
+                const isUser = msgElement.classList.contains('user');
+                const sender = isUser ? '사용자' : '한이';
+                const content = msgElement.querySelector('.message-content').textContent;
+                
+                messages.push(`[${index + 1}] ${sender}`);
+                messages.push('-'.repeat(30));
+                messages.push(content);
+                messages.push('');
+            });
+            
+            // TXT 파일 생성 및 다운로드
+            const txtContent = messages.join('\n');
+            const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            // 파일명 생성 (세션 ID 포함)
+            const sessionPart = currentSessionId ? currentSessionId.substring(0, 8) : 'no-session';
+            a.download = `realcoaching_chat_${sessionPart}.txt`;
+            
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
         }
         
         // 초기 상태 업데이트
