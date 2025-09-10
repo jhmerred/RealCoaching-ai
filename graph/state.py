@@ -46,6 +46,7 @@ class State(BaseModel):
     coverage: Coverage = Coverage()  # 역량별 누적 커버리지
     coverage_goal: CoverageGoal = CoverageGoal()  # 역량별 목표 커버리지
     token_usage: TokenUsage = TokenUsage()  # 토큰 사용량 및 비용
+    current_phase: str = "info_collection"  # 현재 진단 단계 (info_collection -> diagnosis)
     finished: bool = False
     turn_budget: int = 50
     session_id: str = ""  # 세션 ID 저장

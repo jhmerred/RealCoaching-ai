@@ -21,6 +21,42 @@ def parse_json_maybe(s: str) -> dict:
     except Exception:
         return {}
 
+def check_user_info_completeness(messages, llm: LLM):
+    """
+    LLM을 사용하여 필수 개인정보가 모두 수집되었는지 확인합니다.
+    """
+    conversation = "\n".join([
+        f"{msg.role}: {msg.content}" 
+        for msg in messages
+    ])
+    
+    check_prompt = """
+다음 대화 내용에서 아래 필수 정보가 모두 수집되었는지 확인해주세요.
+
+필수 정보:
+1. 이름
+2. 나이
+3. 회사명
+4. 부서 또는 팀
+5. 직위
+6. 업무 또는 역할
+
+모든 정보가 수집되었으면 "complete", 하나라도 빠진 것이 있으면 "incomplete"로만 답해주세요.
+
+대화 내용:
+""" + conversation
+    
+    try:
+        check_messages = [
+            Turn(role="system", content="당신은 대화 내용에서 필수 정보 수집 여부를 확인하는 전문가입니다."),
+            Turn(role="user", content=check_prompt)
+        ]
+        
+        result = llm.text(check_messages).strip().lower()
+        return "complete" in result
+    except:
+        return False
+
 def step(state: State, llm: LLM) -> State:
     # 정적 시스템 프롬프트 로드
     static_prompt = render("system_static.txt")
@@ -33,6 +69,7 @@ def step(state: State, llm: LLM) -> State:
         coverage_culture=state.coverage.culture * 100 // state.coverage_goal.culture,
         coverage_ei=state.coverage.ei * 100 // state.coverage_goal.ei,
         coverage_leader_ei=state.coverage.leader_ei * 100 // state.coverage_goal.leader_ei,
+        current_phase=state.current_phase,
     )
 
     print("--------------------------------------------------------------------------------------------------------")
@@ -104,6 +141,14 @@ def step(state: State, llm: LLM) -> State:
     state.coverage = new_coverage
     state.turn_budget = max(0, state.turn_budget - 1)
     state.messages.append(Turn(role="assistant", content=assistant_text))
+    
+    # 개인정보 수집 단계에서만 체크
+    if state.current_phase == "info_collection":
+        # 대화가 충분히 진행되었을 때만 체크 (최소 3턴 이후)
+        if len(state.messages) >= 6:  # 양쪽 대화 3번 이상
+            if check_user_info_completeness(state.messages, llm):
+                state.current_phase = "diagnosis"
+                print("\n=== 개인정보 수집 완료, 진단 단계로 전환 ===")
 
     if assistant_type == "finished":
         state.finished = True
@@ -112,6 +157,58 @@ def step(state: State, llm: LLM) -> State:
 
     return state
 
+
+def extract_user_info_with_llm(messages, llm: LLM):
+    """
+    LLM을 사용하여 대화 내용에서 개인정보를 추출합니다.
+    """
+    conversation = "\n".join([
+        f"{msg.role}: {msg.content}" 
+        for msg in messages
+    ])
+    
+    extraction_prompt = """
+다음 대화 내용에서 사용자의 개인정보를 추출해주세요.
+반드시 JSON 형식으로만 응답하고, 찾을 수 없는 정보는 빈 문자열로 남겨두세요.
+
+{
+  "name": "이름",
+  "age": "나이",
+  "company": "회사명",
+  "department": "부서명",
+  "team": "팀명",
+  "position": "직위",
+  "duty": "업무"
+}
+
+대화 내용:
+""" + conversation
+    
+    try:
+        extraction_messages = [
+            Turn(role="system", content="당신은 대화 내용에서 개인정보를 추출하는 전문가입니다. JSON 형식으로만 응답해주세요."),
+            Turn(role="user", content=extraction_prompt)
+        ]
+        
+        raw_response = llm.text(extraction_messages)
+        # JSON 파싱
+        clean_response = raw_response.strip()
+        if clean_response.startswith("```"):
+            clean_response = re.sub(r"^```[a-z]*\n|\n```$", "", clean_response, flags=re.IGNORECASE|re.MULTILINE)
+        
+        user_info = json.loads(clean_response)
+        return user_info
+    except Exception as e:
+        print(f"개인정보 추출 실패: {e}")
+        return {
+            "name": "",
+            "age": "",
+            "company": "",
+            "department": "",
+            "team": "",
+            "position": "",
+            "duty": ""
+        }
 
 def calculate_final_score(state: State, llm: LLM) -> State:
     """
@@ -141,15 +238,24 @@ def calculate_final_score(state: State, llm: LLM) -> State:
         # JSON 파싱 (프롬프트에서 직접 반환된 형식 사용)
         result = json.loads(raw_score)
         
-        # 사용자 정보 (실제 환경에서는 별도 소스에서 가져와야 함)
+        # LLM을 통해 대화 내용에서 개인정보 추출
+        extracted_info = extract_user_info_with_llm(state.messages, llm)
+        
+        # 사용자 정보 (추출된 정보 우선 사용, 없으면 환경변수)
         user_info = {
-            "companyName": os.getenv("COMPANY_NAME", "RealCoaching"),
-            "position": os.getenv("USER_POSITION", "팀장"),
-            "name": os.getenv("USER_NAME", "테스터"),
-            "department": os.getenv("USER_DEPARTMENT", "개발팀"),
+            "companyName": extracted_info.get("company") or os.getenv("COMPANY_NAME", "RealCoaching"),
+            "position": extracted_info.get("position") or os.getenv("USER_POSITION", "팀장"),
+            "name": extracted_info.get("name") or os.getenv("USER_NAME", "테스터"),
+            "department": f"{extracted_info.get('department', '')} {extracted_info.get('team', '')}".strip() or os.getenv("USER_DEPARTMENT", "개발팀"),
             "testDate": datetime.now().strftime("%Y-%m-%d"),
             "reportId": f"RC-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
         }
+        
+        print(f"\n=== 추출된 개인정보 ===")
+        print(f"이름: {user_info['name']}")
+        print(f"회사: {user_info['companyName']}")
+        print(f"부서: {user_info['department']}")
+        print(f"직위: {user_info['position']}")
         
         # PDF 생성을 위한 데이터 준비
         pdf_data = prepare_result_for_pdf(state.messages, result, user_info)

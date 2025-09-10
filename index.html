@@ -600,7 +600,7 @@
         <div class="sidebar-header">
             <img src="./logo/RealCoaching_logo_full.png" alt="RealCoaching Logo" class="logo">
             <h1>리얼코칭 AI 챗봇</h1>
-            <p>감정진단 전문 AI - 한이</p>
+            <p>감정진단 전문 AI - 라일리</p>
         </div>
         
         <div class="sidebar-content">
@@ -618,7 +618,7 @@
                 <div class="section-title">사용 안내</div>
                 <div style="font-size: 13px; color: #999; line-height: 1.6;">
                     1. 새 세션을 생성하거나 기존 세션 ID를 입력하세요<br>
-                    2. 한이와 대화를 시작하세요<br>
+                    2. 라일리와 대화를 시작하세요<br>
                     3. 진단이 완료되면 결과를 확인하세요
                 </div>
             </div>
@@ -831,11 +831,12 @@
             
             const labelDiv = document.createElement('div');
             labelDiv.className = 'message-label';
-            labelDiv.textContent = isUser ? '사용자' : '한이';
+            labelDiv.textContent = isUser ? '사용자' : '라일리';
             
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
-            contentDiv.textContent = content;
+            // 줄바꿈 처리: \n을 <br>로 변환
+            contentDiv.innerHTML = content.replace(/\n/g, '<br>');
             
             wrapperDiv.appendChild(labelDiv);
             wrapperDiv.appendChild(contentDiv);
@@ -878,11 +879,12 @@
             
             const labelDiv = document.createElement('div');
             labelDiv.className = 'message-label';
-            labelDiv.textContent = isUser ? '사용자' : '한이';
+            labelDiv.textContent = isUser ? '사용자' : '라일리';
             
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
-            contentDiv.textContent = content;
+            // 줄바꿈 처리: \n을 <br>로 변환
+            contentDiv.innerHTML = content.replace(/\n/g, '<br>');
             
             wrapperDiv.appendChild(labelDiv);
             wrapperDiv.appendChild(contentDiv);
@@ -931,7 +933,7 @@
             // 로딩 표시
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'message assistant';
-            loadingDiv.innerHTML = '<div class="message-wrapper"><div class="message-label">한이</div><div class="message-content">생각중...<span class="loading"></span></div></div>';
+            loadingDiv.innerHTML = '<div class="message-wrapper"><div class="message-label">라일리</div><div class="message-content">생각중...<span class="loading"></span></div></div>';
             const container = document.getElementById('chatContainer');
             container.appendChild(loadingDiv);
             container.scrollTo({
@@ -1224,7 +1226,7 @@
             // 각 메시지 내용 추출
             messageElements.forEach((msgElement, index) => {
                 const isUser = msgElement.classList.contains('user');
-                const sender = isUser ? '사용자' : '한이';
+                const sender = isUser ? '사용자' : '라일리';
                 const content = msgElement.querySelector('.message-content').textContent;
                 
                 messages.push(`[${index + 1}] ${sender}`);
@@ -1274,7 +1276,7 @@
             // 각 메시지 내용 추출
             messageElements.forEach((msgElement, index) => {
                 const isUser = msgElement.classList.contains('user');
-                const sender = isUser ? '사용자' : '한이';
+                const sender = isUser ? '사용자' : '라일리';
                 const content = msgElement.querySelector('.message-content').textContent;
                 
                 messages.push(`[${index + 1}] ${sender}`);
