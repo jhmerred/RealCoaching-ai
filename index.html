@@ -202,9 +202,17 @@
         }
         
         .pdf-download-btn:disabled {
-            background: linear-gradient(135deg, #999 0%, #666 100%);
+            background: linear-gradient(135deg, #999 0%, #666 100%) !important;
             cursor: not-allowed;
             box-shadow: none;
+        }
+        
+        .txt-download-btn {
+            background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+        }
+        
+        .txt-download-btn:hover:not(:disabled) {
+            box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
         }
         
         .pdf-status {
@@ -1088,10 +1096,15 @@
             pdfContainer.className = 'pdf-download-container';
             pdfContainer.innerHTML = `
                 <h3>진단이 완료되었습니다!</h3>
-                <p>상세한 분석 결과를 PDF 보고서로 확인하세요.</p>
-                <button onclick="downloadPDF()" class="pdf-download-btn" id="pdfDownloadBtn" disabled>
-                    📄 보고서 다운로드 (PDF + TXT)
-                </button>
+                <p>상세한 분석 결과를 보고서로 확인하세요.</p>
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="downloadPDF()" class="pdf-download-btn" id="pdfDownloadBtn" disabled>
+                        📄 PDF 보고서
+                    </button>
+                    <button onclick="downloadCompletedChatAsTxt()" class="pdf-download-btn txt-download-btn" id="txtDownloadBtn">
+                        💬 대화 기록 (TXT)
+                    </button>
+                </div>
                 <div id="pdfStatus" class="pdf-status">⏳ PDF 생성 중...</div>
             `;
             
@@ -1155,12 +1168,11 @@
             
             if (!statusDiv) return;
             
-            statusDiv.textContent = '다운로드 중...';
+            statusDiv.textContent = 'PDF 다운로드 중...';
             statusDiv.className = 'pdf-status';
             downloadBtn.disabled = true;
             
             try {
-                // 1. PDF 다운로드
                 const response = await fetch(`http://localhost:8000/pdf/${currentSessionId}`);
                 
                 if (!response.ok) {
@@ -1179,12 +1191,7 @@
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
                 
-                // 2. TXT 파일도 자동으로 다운로드 (약간의 지연 후)
-                setTimeout(() => {
-                    downloadChatAsTxtSilent();
-                }, 500);
-                
-                statusDiv.textContent = '다운로드가 완료되었습니다!';
+                statusDiv.textContent = 'PDF 다운로드가 완료되었습니다!';
                 statusDiv.className = 'pdf-status ready';
                 
                 // 3초 후 메시지 초기화
@@ -1204,12 +1211,26 @@
             }
         }
         
-        // 조용히 TXT 다운로드 (알림 없이)
-        function downloadChatAsTxtSilent() {
+        // 진단 완료 후 TXT 다운로드 함수
+        function downloadCompletedChatAsTxt() {
+            if (!currentSessionId || !isFinished) {
+                alert('진단이 완료된 후 다운로드할 수 있습니다.');
+                return;
+            }
+            
+            const txtDownloadBtn = document.getElementById('txtDownloadBtn');
+            if (txtDownloadBtn) {
+                txtDownloadBtn.disabled = true;
+            }
+            
             const messages = [];
             const messageElements = document.querySelectorAll('.message');
             
             if (messageElements.length === 0) {
+                alert('다운로드할 대화 내용이 없습니다.');
+                if (txtDownloadBtn) {
+                    txtDownloadBtn.disabled = false;
+                }
                 return;
             }
             
@@ -1220,6 +1241,7 @@
             messages.push(`세션 ID: ${currentSessionId || '없음'}`);
             messages.push(`다운로드 일시: ${new Date().toLocaleString('ko-KR')}`);
             messages.push(`총 메시지 수: ${messageElements.length}`);
+            messages.push(`진단 상태: 완료`);
             messages.push('='.repeat(50));
             messages.push('');
             
@@ -1251,6 +1273,24 @@
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
+            
+            // 다운로드 완료 알림
+            const statusDiv = document.getElementById('pdfStatus');
+            if (statusDiv) {
+                const originalText = statusDiv.textContent;
+                const originalClass = statusDiv.className;
+                statusDiv.textContent = 'TXT 다운로드가 완료되었습니다!';
+                statusDiv.className = 'pdf-status ready';
+                
+                // 3초 후 원래 상태로 복원
+                setTimeout(() => {
+                    statusDiv.textContent = originalText;
+                    statusDiv.className = originalClass;
+                    if (txtDownloadBtn) {
+                        txtDownloadBtn.disabled = false;
+                    }
+                }, 3000);
+            }
         }
         
         // 채팅 내용 TXT로 다운로드 함수

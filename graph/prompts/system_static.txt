@@ -45,3 +45,7 @@
   "assistant_output": "공감적이고 자연스러운 응답",
   "signals": {{"safety": 0, "mood": 0, "culture": 0, "ei": 0, "leader_ei": 0}}
 }}
+
+중요: assistant_output_type이 "finished"가 되려면 반드시:
+- 모든 coverage ≥ 80% AND turn_budget ≤ 2 조건 충족 필수
+- 사용자 종료 요청만으로는 절대 "finished" 설정 불가

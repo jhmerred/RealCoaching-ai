@@ -41,7 +41,7 @@ def check_user_info_completeness(messages, llm: LLM):
 5. 직위
 6. 업무 또는 역할
 
-모든 정보가 수집되었으면 "complete", 하나라도 빠진 것이 있으면 "incomplete"로만 답해주세요.
+모든 정보가 수집되었으면 "종료", 하나라도 빠진 것이 있으면 "계속"로만 답해주세요.
 
 대화 내용:
 """ + conversation
@@ -53,7 +53,7 @@ def check_user_info_completeness(messages, llm: LLM):
         ]
         
         result = llm.text(check_messages).strip().lower()
-        return "complete" in result
+        return "종료" in result
     except:
         return False
 
