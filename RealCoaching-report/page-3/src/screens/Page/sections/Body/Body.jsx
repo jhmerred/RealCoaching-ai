@@ -30,14 +30,6 @@ export const Body = ({ data = {} }) => {
                 <div className="relative self-stretch mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs tracking-[-0.12px] leading-[18px]">
                   심리적 안전감
                 </div>
-
-                <div className="relative self-stretch [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[15px]">
-                  Edmondson 이론 기반
-                </div>
-
-                <div className="relative self-stretch [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#679af7] text-[8px] tracking-[-0.12px] leading-3">
-                  커버리지: {coverage1}%
-                </div>
               </div>
             </div>
 
@@ -49,14 +41,6 @@ export const Body = ({ data = {} }) => {
               <div className="flex flex-col items-start justify-center relative flex-1 grow">
                 <div className="relative self-stretch mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs tracking-[-0.12px] leading-[18px]">
                   정서상태
-                </div>
-
-                <div className="relative self-stretch [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[15px]">
-                  PANAS 기반 (긍정/부정 정서)
-                </div>
-
-                <div className="relative self-stretch [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#679af7] text-[8px] tracking-[-0.12px] leading-3">
-                  커버리지: {coverage2}%
                 </div>
               </div>
             </div>
@@ -70,14 +54,6 @@ export const Body = ({ data = {} }) => {
                 <div className="relative self-stretch mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs tracking-[-0.12px] leading-[18px]">
                   정서문화
                 </div>
-
-                <p className="relative self-stretch [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[15px]">
-                  Mayer &amp; Salovey 이론 기반
-                </p>
-
-                <div className="relative self-stretch [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#679af7] text-[8px] tracking-[-0.12px] leading-3">
-                  커버리지: {coverage3}%
-                </div>
               </div>
             </div>
 
@@ -90,14 +66,6 @@ export const Body = ({ data = {} }) => {
                 <div className="relative self-stretch mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs tracking-[-0.12px] leading-[18px]">
                   감성지능
                 </div>
-
-                <div className="relative self-stretch [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[15px]">
-                  감정상태별 평가 및 리더십
-                </div>
-
-                <div className="relative self-stretch [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#679af7] text-[8px] tracking-[-0.12px] leading-3">
-                  커버리지: {coverage4}%
-                </div>
               </div>
             </div>
 
@@ -109,14 +77,6 @@ export const Body = ({ data = {} }) => {
               <div className="flex flex-col items-start justify-center relative flex-1 grow">
                 <div className="relative self-stretch mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs tracking-[-0.12px] leading-[18px]">
                   리더십 감성역량
-                </div>
-
-                <div className="relative self-stretch [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[15px]">
-                  변혁적 리더십 및 조직문화
-                </div>
-
-                <div className="relative self-stretch [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#679af7] text-[8px] tracking-[-0.12px] leading-3">
-                  커버리지: {coverage5}%
                 </div>
               </div>
             </div>
