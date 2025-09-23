@@ -597,9 +597,144 @@
                 font-size: 12px;
             }
         }
+        /* 비밀번호 모달 스타일 */
+        .password-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .password-modal.active {
+            display: flex;
+        }
+
+        .password-modal-box {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 400px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .password-modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .password-modal-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        .password-input:focus {
+            border-color: #000;
+        }
+
+        .password-input.error {
+            border-color: #ef4444;
+        }
+
+        .password-modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .password-modal-button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .password-modal-button.primary {
+            background: #000;
+            color: #fff;
+        }
+
+        .password-modal-button.primary:hover {
+            background: #333;
+        }
+
+        .password-modal-button.secondary {
+            background: #f3f3f3;
+            color: #000;
+        }
+
+        .password-modal-button.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .password-error {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: -8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .password-error.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
+    <!-- 비밀번호 모달 -->
+    <div class="password-modal" id="passwordModal">
+        <div class="password-modal-box">
+            <h2 class="password-modal-title">새 세션 생성</h2>
+            <p class="password-modal-subtitle">세션 생성을 위해 비밀번호를 입력해주세요</p>
+
+            <input
+                type="password"
+                id="passwordInput"
+                class="password-input"
+                placeholder="비밀번호 입력"
+                onkeypress="handlePasswordKeyPress(event)"
+                autocomplete="off"
+            >
+
+            <div class="password-error" id="passwordError">
+                비밀번호가 올바르지 않습니다.
+            </div>
+
+            <div class="password-modal-buttons">
+                <button onclick="cancelPasswordModal()" class="password-modal-button secondary">
+                    취소
+                </button>
+                <button onclick="confirmPassword()" class="password-modal-button primary">
+                    확인
+                </button>
+            </div>
+        </div>
+    </div>
     <!-- 사이드바 오버레이 -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
@@ -638,9 +773,9 @@
                     💬 대화 내용 다운로드
                 </button>
             </div>
-            
+
         </div>
-        
+
         <!-- 하단 고정 상태 정보 -->
         <div class="sidebar-footer">
             <div class="section-title">진단 상태</div>
@@ -659,11 +794,8 @@
                     <span class="status-label">대화 수</span>
                     <span class="status-value" id="messageCount">0</span>
                 </div>
-                <div class="status-item">
-                    <span class="status-label">사용 금액</span>
-                    <span class="status-value" id="totalCost">₩0</span>
-                </div>
             </div>
+
         </div>
     </div>
 
@@ -708,7 +840,86 @@
         let isLoading = false;
         let isFinished = false;
         let messageCounter = 0;
-        let totalCost = 0;
+
+        // 비밀번호 설정 (필요에 따라 변경하세요)
+        const CORRECT_PASSWORD = 'Real2025';
+        let pendingSessionCreation = false;
+
+        // 페이지 로드 시 초기 상태 업데이트
+        window.addEventListener('DOMContentLoaded', function() {
+            updateStatus();
+        });
+
+        // 비밀번호 모달 표시
+        function showPasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            modal.classList.add('active');
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordError').classList.remove('show');
+            document.getElementById('passwordInput').classList.remove('error');
+            document.getElementById('passwordInput').focus();
+        }
+
+        // 비밀번호 모달 닫기
+        function hidePasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            modal.classList.remove('active');
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordError').classList.remove('show');
+            document.getElementById('passwordInput').classList.remove('error');
+            pendingSessionCreation = false;
+        }
+
+        // 비밀번호 입력 시 Enter 키 처리
+        function handlePasswordKeyPress(event) {
+            if (event.key === 'Enter') {
+                confirmPassword();
+            }
+        }
+
+        // 비밀번호 확인
+        function confirmPassword() {
+            const passwordInput = document.getElementById('passwordInput');
+            const password = passwordInput.value.trim();
+            const passwordError = document.getElementById('passwordError');
+
+            if (password === CORRECT_PASSWORD) {
+                // 비밀번호 인증 성공
+                hidePasswordModal();
+                // 실제로 세션 생성
+                createNewSession();
+            } else {
+                // 비밀번호 오류
+                passwordInput.classList.add('error');
+                passwordError.classList.add('show');
+                passwordInput.value = '';
+                passwordInput.focus();
+
+                setTimeout(() => {
+                    passwordInput.classList.remove('error');
+                }, 300);
+            }
+        }
+
+        // 비밀번호 모달 취소
+        function cancelPasswordModal() {
+            hidePasswordModal();
+        }
+
+        // 실제 새 세션 생성
+        function createNewSession() {
+            const newSessionId = generateUUID();
+            document.getElementById('sessionId').value = newSessionId;
+            currentSessionId = newSessionId;
+            enableChat();
+            updateStatus();
+            clearMessages();
+            messageCounter = 0;
+            isFinished = false;
+
+            // 첫 메시지 자동 전송
+            startConversation();
+        }
 
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -721,7 +932,7 @@
         async function setSession() {
             const sessionInput = document.getElementById('sessionId');
             const sessionId = sessionInput.value.trim();
-            
+
             if (!sessionId) {
                 alert('세션 ID를 입력하세요.');
                 return;
@@ -733,12 +944,11 @@
                 if (response.ok) {
                     const sessionData = await response.json();
                     await restoreSession(sessionData);
+                    alert('기존 세션을 불러왔습니다.');
                 } else if (response.status === 404) {
-                    // 새 세션으로 처리
-                    currentSessionId = sessionId;
-                    enableChat();
-                    updateStatus();
-                    startConversation();
+                    // 세션이 존재하지 않음
+                    alert('해당 세션 ID가 존재하지 않습니다.\n새 세션을 생성하시거나 올바른 세션 ID를 입력해주세요.');
+                    sessionInput.focus();
                 } else {
                     throw new Error('세션 조회 실패');
                 }
@@ -749,19 +959,9 @@
         }
 
         function generateSession() {
-            const newSessionId = generateUUID();
-            document.getElementById('sessionId').value = newSessionId;
-            currentSessionId = newSessionId;
-            enableChat();
-            updateStatus();
-            clearMessages();
-            messageCounter = 0;
-            totalCost = 0;
-            isFinished = false;
-            updateTotalCost();
-            
-            // 첫 메시지 자동 전송
-            startConversation();
+            // 비밀번호 모달 표시
+            pendingSessionCreation = true;
+            showPasswordModal();
         }
 
         function clearSession() {
@@ -778,7 +978,8 @@
                 pdfContainer.remove();
             }
             
-            generateSession();
+            // 비밀번호 확인 후 새 세션 생성
+            showPasswordModal();
         }
 
         function clearMessages() {
@@ -830,54 +1031,44 @@
         }
 
         function addMessage(content, isUser, tokenUsage = null) {
+            // 빈 메시지는 표시하지 않음
+            if (isUser && !content) return;
+
             const container = document.getElementById('chatContainer');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
-            
+
             const wrapperDiv = document.createElement('div');
             wrapperDiv.className = 'message-wrapper';
-            
+
             const labelDiv = document.createElement('div');
             labelDiv.className = 'message-label';
             labelDiv.textContent = isUser ? '사용자' : '라일리';
-            
+
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
             // 줄바꿈 처리: \n을 <br>로 변환
             contentDiv.innerHTML = content.replace(/\n/g, '<br>');
-            
+
             wrapperDiv.appendChild(labelDiv);
             wrapperDiv.appendChild(contentDiv);
-            
-            // AI 메시지이고 토큰 사용량 정보가 있으면 비용 표시
-            if (!isUser && tokenUsage && tokenUsage.current_cost_krw) {
-                const costDiv = document.createElement('div');
-                costDiv.className = 'message-cost';
-                costDiv.innerHTML = `
-                    <span style="margin-left: 8px; color: #666;">₩${tokenUsage.current_cost_krw.toFixed(1)}</span>
-                `;
-                wrapperDiv.appendChild(costDiv);
-                
-                // 총 비용 업데이트
-                totalCost = tokenUsage.total_cost_krw;
-                updateTotalCost();
-            }
-            
+
             messageDiv.appendChild(wrapperDiv);
-            
+
             container.appendChild(messageDiv);
             container.scrollTo({
                 top: container.scrollHeight,
                 behavior: 'smooth'
             });
-            
-            if (isUser) {
+
+            if (isUser && content) {
                 messageCounter++;
                 updateStatus();
             }
         }
 
         function addRestoreMessage(content, isUser, tokenUsage = null) {
+            if (isUser && !content) return;
             const container = document.getElementById('chatContainer');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
@@ -897,25 +1088,15 @@
             wrapperDiv.appendChild(labelDiv);
             wrapperDiv.appendChild(contentDiv);
             
-            // AI 메시지이고 토큰 사용량 정보가 있으면 비용 표시
-            if (!isUser && tokenUsage && tokenUsage.current_cost_krw) {
-                const costDiv = document.createElement('div');
-                costDiv.className = 'message-cost';
-                costDiv.innerHTML = `
-                    <span style="margin-left: 8px; color: #666;">₩${tokenUsage.current_cost_krw.toFixed(1)}</span>
-                `;
-                wrapperDiv.appendChild(costDiv);
-            }
-            
             messageDiv.appendChild(wrapperDiv);
             container.appendChild(messageDiv);
+
+            if (isUser && content) {
+                messageCounter++;
+                updateStatus();
+            }
         }
         
-        function updateTotalCost() {
-            const totalCostElement = document.getElementById('totalCost');
-            totalCostElement.textContent = `₩${totalCost.toFixed(1)}`;
-        }
-
         async function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
@@ -1041,7 +1222,6 @@
             
             // 메시지 수 초기화
             messageCounter = 0;
-            totalCost = state.token_usage?.total_cost_krw || 0;
             isFinished = state.finished || false;
             
             // 채팅 활성화 및 환영 메시지 제거
@@ -1053,7 +1233,6 @@
                 for (const message of state.messages) {
                     if (message.role === 'user') {
                         addRestoreMessage(message.content, true);
-                        messageCounter++;
                     } else if (message.role === 'assistant') {
                         // 토큰 사용량 정보 추출 (최신 메시지에만 표시)
                         const tokenUsage = message === state.messages[state.messages.length - 1] ? state.token_usage : null;
@@ -1064,7 +1243,6 @@
             
             // 상태 업데이트
             updateStatus();
-            updateTotalCost();
             
             // 완료된 세션이면 입력 비활성화 및 PDF 컨테이너 추가
             if (isFinished) {
