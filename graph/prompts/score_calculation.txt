@@ -7,7 +7,7 @@
 [점수 범위/형식 규칙]
 1) 점수는 0.0~5.0 범위, 소수점 첫째 자리까지(예: 3.5). 없으면 0.0으로.
 2) coverage는 0~100 정수.
-3) 날짜는 "YYYY-MM-DD" (알 수 없으면 "0000-00-00").
+3) 날짜는 "YYYY-MM-DD" (알 수 없으면 오늘 날짜).
 4) color는 gray | green | red 중 하나.
 5) 배열 길이는 템플릿에 나온 개수만큼 채우기(예: recommendations 2개, goals 각각 3개).
 6) 템플릿의 키/서순/구조는 절대 변경·추가·삭제하지 말 것.
@@ -265,12 +265,28 @@ G) page11 (종합 결론)
    - 리더십감성역량 = page10.scoreData 4개 평균
    - comprehensiveInsight: 응답자가 사용한 단어 및 문구를 사용하여 종합제언 작성. 수치를 고려한 값으로 도출 3~5문장
    - improvementAreas: 3개(영역/현재상태/권장조치 한 줄)
-   - emotionTemperatureData는 무시 가능(값은 임의 보정 가능)
+   - emotionTemperatureData: 감정 상태를 R,G,B 레벨로 표현
+     * rLevel: 심리적 안정감 수준 (L=낮음, M=보통, H=높음)
+     * gLevel: 정서상태 수준 (L=낮음, M=보통, H=높음)
+     * bLevel: 감성지능 수준 (L=낮음, M=보통, H=높음)
+     * 대화 내용의 감정 톤을 분석하여 각 레벨 결정
 
 H) page12 (목표/모니터링)
    - short/medium/longTermGoals: 각 3개 짧은 문장
    - coachingPoint: 2문장
-   - monitoringSchedule.recommendedDate = testDate + 30일 (testDate 미상이면 "Email. real@realcoaching.co.kr , Tel  010-3393-2027")
+   - monitoringSchedule.currentDate: 오늘 날짜
+   - monitoringSchedule.recommendedDate: 오늘 날짜 + 1달
+
+"page12": { // 목표/모니터링
+      "shortTermGoals": ["", "", ""],
+      "mediumTermGoals": ["", "", ""],
+      "longTermGoals": ["", "", ""],
+      "coachingPoint": "",
+      "monitoringSchedule": {
+        "currentDate": "YYYY-MM-DD",
+        "recommendedDate": "YYYY-MM-DD"
+      }
+    }
 
 [출력 형식]
 - 아래 "주석 포함 JSON 템플릿"의 구조/서순/키를 그대로 유지하고, 값만 채운 "JSON만" 출력하세요.
@@ -284,7 +300,7 @@ H) page12 (목표/모니터링)
       "position": "",          // 직급
       "name": "",              // 이름
       "department": "",        // 부서
-      "testDate": "YYYY-MM-DD",// 검사 날짜 (모르면 0000-00-00)
+      "testDate": "YYYY-MM-DD",// 검사 날짜 (오늘 날짜)
       "reportId": ""           // 리포트 ID
     },
     "page3": { // 검사 개요
@@ -402,9 +418,7 @@ H) page12 (목표/모니터링)
         "감정활용": 0
       },
       "comprehensiveInsight": "",
-      "emotionTemperatureData": { // 무시 가능
-        "temperature": 0,
-        "color": "#000000",
+      "emotionTemperatureData": { // RGB 레벨만 전달 (L, M, H)
         "rLevel": "L",
         "gLevel": "L",
         "bLevel": "L"

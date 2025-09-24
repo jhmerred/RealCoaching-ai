@@ -226,7 +226,7 @@ export const Body = ({ data = {} }) => {
                 <div className="flex-col items-start justify-center flex relative self-stretch w-full flex-[0_0_auto]">
                   <div className="flex items-center gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
                     <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[17.0px]">
-                      E-mail: hr@company.com | Tel: 02-1234-5678
+                      E-mail: real@realcoaching.co.kr | Tel: 010-3393-2027
                     </p>
                   </div>
                 </div>

@@ -46,18 +46,87 @@ export const Body = ({ data = {} }) => {
     감정활용: 3.6,
   };
 
-  const comprehensiveInsight = data.comprehensiveInsight || `김OO 과장은 개인적 차원의 감성 역량이 우수하나, 이를 조직
+  // 사용자 이름 가져오기 (data.userName이 있으면 사용, 없으면 '김OO'로 표시)
+  const userName = data.userName || '김OO';
+
+  const comprehensiveInsight = data.comprehensiveInsight || `${userName} 과장은 개인적 차원의 감성 역량이 우수하나, 이를 조직
 문화와 리더십 차원으로 확장시키는 데 더 집중할 필요가 있습니다.
 자기 인식 능력과 도전적 태도를 바탕으로 팀 내 심리적 안전감과
 감정 소통 문화를 주도적으로 이끌어 나간다면, 개인과 조직의
 성장에 더욱 긍정적인 영향을 미칠 수 있을 것입니다.`;
 
-  const emotionTemperatureData = data.emotionTemperatureData || {
-    temperature: 6,
-    color: "#1bb8c0",
+  // RGB 레벨 데이터 받기
+  const rgbLevels = data.emotionTemperatureData || {
     rLevel: "L",
-    gLevel: "M", 
+    gLevel: "M",
     bLevel: "H",
+  };
+
+  // RGB 레벨을 1~27의 온도값으로 변환하는 함수
+  // R이 메인 그룹 결정: L(1~9), M(10~18), H(19~27)
+  // G가 서브그룹 결정: L(+0), M(+3), H(+6)
+  // B가 세부값 결정: L(+0), M(+1), H(+2)
+  const rgbLevelsToTemperature = (r, g, b) => {
+    const rBase = r === "L" ? 1 : r === "M" ? 10 : 19;  // 1, 10, or 19
+    const gOffset = g === "L" ? 0 : g === "M" ? 3 : 6;  // 0, 3, or 6
+    const bOffset = b === "L" ? 0 : b === "M" ? 1 : 2;  // 0, 1, or 2
+
+    return rBase + gOffset + bOffset;
+  };
+
+  // SVG에서 사용하는 27개 색상 매핑
+  const temperatureToColor = (temp) => {
+    const colors = [
+      "#15001A", // 1 - L,L,L
+      "#111D76", // 2 - L,L,M
+      "#2D5DD7", // 3 - L,L,H
+      "#1784EA", // 4 - L,M,L
+      "#1BB8C1", // 5 - L,M,M
+      "#30CFBA", // 6 - L,M,H
+      "#43EC9D", // 7 - L,H,L
+      "#28FF9B", // 8 - L,H,M
+      "#8BFF59", // 9 - L,H,H
+      "#810020", // 10 - M,L,L
+      "#800180", // 11 - M,L,M
+      "#9F3DBC", // 12 - M,L,H
+      "#EB52C0", // 13 - M,M,L
+      "#E4809C", // 14 - M,M,M
+      "#BEE788", // 15 - M,M,H
+      "#ABF75F", // 16 - M,H,L
+      "#ABFCB5", // 17 - M,H,M
+      "#CDFFB8", // 18 - M,H,H
+      "#EB255A", // 19 - H,L,L
+      "#F92D3E", // 20 - H,L,M
+      "#FF4E33", // 21 - H,L,H
+      "#FF7556", // 22 - H,M,L
+      "#FF934A", // 23 - H,M,M
+      "#FFB688", // 24 - H,M,H
+      "#FFEE55", // 25 - H,H,L
+      "#FFF9A9", // 26 - H,H,M
+      "#FFFDEE", // 27 - H,H,H
+    ];
+
+    // 온도값이 1~27 범위를 벗어나면 가장 가까운 값으로 조정
+    const index = Math.max(0, Math.min(26, temp - 1));
+    return colors[index];
+  };
+
+  // 온도값 계산
+  const temperature = rgbLevelsToTemperature(
+    rgbLevels.rLevel,
+    rgbLevels.gLevel,
+    rgbLevels.bLevel
+  );
+
+  // 온도값에 따른 색상 선택
+  const color = temperatureToColor(temperature);
+
+  const emotionTemperatureData = {
+    temperature: temperature,
+    color: color,
+    rLevel: rgbLevels.rLevel,
+    gLevel: rgbLevels.gLevel,
+    bLevel: rgbLevels.bLevel,
   };
 
   const improvementAreas = data.improvementAreas || [
@@ -274,7 +343,7 @@ export const Body = ({ data = {} }) => {
           <div className="w-[178px] h-[200px] justify-between flex flex-col items-center p-2.5 relative bg-[#f3f6fa] rounded-lg overflow-hidden">
             <div className="items-center justify-center self-stretch w-full flex-[0_0_auto] flex relative">
               <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs text-center tracking-[-0.12px] leading-[18px] whitespace-nowrap">
-                김OO님의 감정 온도
+                {userName}님의 감정 온도
               </div>
             </div>
 

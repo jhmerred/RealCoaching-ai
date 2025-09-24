@@ -133,26 +133,26 @@ def calculate_coverages(conversation: list) -> Dict[str, int]:
     }
 
 
-def prepare_result_for_pdf(conversation: list, score_data: dict, 
+def prepare_result_for_pdf(conversation: list, score_data: dict,
                           user_info: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
     """
     대화 내역과 점수 데이터를 PDF API 형식으로 변환합니다.
-    
+
     Args:
         conversation: 대화 내역 리스트
         score_data: LLM이 반환한 점수 계산 결과 (이미 올바른 형식)
         user_info: 사용자 정보 (선택적)
-        
+
     Returns:
         PDF 생성 API 요청 형식
     """
     # 사용자 정보가 없으면 추출 또는 기본값 사용
     if not user_info:
         user_info = extract_user_info(conversation)
-    
+
     # 커버리지 계산
     coverage_data = calculate_coverages(conversation)
-    
+
     # score_data가 이미 올바른 형식인 경우 그대로 사용
     # 프롬프트가 정확한 형식을 반환하도록 설계됨
     if "data" in score_data:
@@ -161,6 +161,21 @@ def prepare_result_for_pdf(conversation: list, score_data: dict,
         # page1과 page3 정보 업데이트
         pdf_request_data["data"]["page1"] = user_info
         pdf_request_data["data"]["page3"] = coverage_data
+
+        # page11에 사용자 이름 추가 (이름만 추출)
+        if "page11" in pdf_request_data["data"]:
+            pdf_request_data["data"]["page11"]["userName"] = user_info.get("name", "김OO")
+
+        # page12에 현재 날짜 정보 추가/업데이트
+        if "page12" in pdf_request_data["data"]:
+            current_date = datetime.now().strftime("%Y-%m-%d")
+            recommended_date = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+
+            if "monitoringSchedule" not in pdf_request_data["data"]["page12"]:
+                pdf_request_data["data"]["page12"]["monitoringSchedule"] = {}
+
+            pdf_request_data["data"]["page12"]["monitoringSchedule"]["currentDate"] = current_date
+            pdf_request_data["data"]["page12"]["monitoringSchedule"]["recommendedDate"] = recommended_date
     else:
         # data 래퍼가 없는 경우 추가
         pdf_request_data = {
@@ -168,6 +183,21 @@ def prepare_result_for_pdf(conversation: list, score_data: dict,
         }
         pdf_request_data["data"]["page1"] = user_info
         pdf_request_data["data"]["page3"] = coverage_data
+
+        # page11에 사용자 이름 추가 (이름만 추출)
+        if "page11" in pdf_request_data["data"]:
+            pdf_request_data["data"]["page11"]["userName"] = user_info.get("name", "김OO")
+
+        # page12에 현재 날짜 정보 추가/업데이트
+        if "page12" in pdf_request_data["data"]:
+            current_date = datetime.now().strftime("%Y-%m-%d")
+            recommended_date = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+
+            if "monitoringSchedule" not in pdf_request_data["data"]["page12"]:
+                pdf_request_data["data"]["page12"]["monitoringSchedule"] = {}
+
+            pdf_request_data["data"]["page12"]["monitoringSchedule"]["currentDate"] = current_date
+            pdf_request_data["data"]["page12"]["monitoringSchedule"]["recommendedDate"] = recommended_date
     
     # config 추가
     if "config" not in pdf_request_data:

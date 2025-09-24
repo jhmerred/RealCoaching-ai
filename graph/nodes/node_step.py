@@ -241,6 +241,9 @@ def calculate_final_score(state: State, llm: LLM) -> State:
         # LLM을 통해 대화 내용에서 개인정보 추출
         extracted_info = extract_user_info_with_llm(state.messages, llm)
         
+        # 세션 ID 가져오기
+        session_id = state.session_id if hasattr(state, 'session_id') and state.session_id else f"RC-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+
         # 사용자 정보 (추출된 정보 우선 사용, 없으면 환경변수)
         user_info = {
             "companyName": extracted_info.get("company") or os.getenv("COMPANY_NAME", "RealCoaching"),
@@ -248,7 +251,7 @@ def calculate_final_score(state: State, llm: LLM) -> State:
             "name": extracted_info.get("name") or os.getenv("USER_NAME", "테스터"),
             "department": f"{extracted_info.get('department', '')} {extracted_info.get('team', '')}".strip() or os.getenv("USER_DEPARTMENT", "개발팀"),
             "testDate": datetime.now().strftime("%Y-%m-%d"),
-            "reportId": f"RC-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+            "reportId": session_id
         }
         
         print(f"\n=== 추출된 개인정보 ===")

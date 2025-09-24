@@ -45,7 +45,7 @@ class StaticPDFGenerator {
       displayHeaderFooter = false,
       headerTemplate = '',
       footerTemplate = '',
-      waitTime = 2000,
+      waitTime = 3000,  // 렌더링 대기 시간 증가 (기본값: 3초)
       scale = 1,  // PDF 스케일 추가
       concurrency = 12  // 동시 처리 페이지 수 (기본값: 12)
     } = options;
@@ -84,18 +84,35 @@ class StaticPDFGenerator {
             timeout: 100000
           });
 
+          // 페이지가 완전히 로드될 때까지 대기
+          try {
+            // body 요소가 있고 내용이 있는지 확인
+            await pageTab.waitForSelector('body', { timeout: 5000 });
+
+            // DOM이 어느 정도 로드되었는지 확인
+            await pageTab.waitForFunction(
+              () => document.readyState === 'complete' && document.body.children.length > 0,
+              { timeout: 10000 }
+            );
+          } catch (e) {
+            console.log(`  ⚠️ Page load check timeout for page ${pageNum}, continuing...`);
+          }
+
           // 데이터 주입
           if (data[`page${pageNum}`]) {
             console.log(`  💉 Injecting data for page ${pageNum}`);
             await pageTab.evaluate((pageData) => {
               // 전역 변수 설정
               window.reportData = pageData;
-              
+
+              // 페이지 렌더링 완료 플래그
+              window.dataInjectionComplete = false;
+
               // React 컴포넌트 업데이트 시도
               if (window.updateWithData && typeof window.updateWithData === 'function') {
                 window.updateWithData(pageData);
               }
-              
+
               // data-field 속성 업데이트
               document.querySelectorAll('[data-field]').forEach(element => {
                 const field = element.getAttribute('data-field');
@@ -107,7 +124,7 @@ class StaticPDFGenerator {
                   }
                 }
               });
-              
+
               // 템플릿 변수 치환 {{variable}}
               const walkTextNodes = (node) => {
                 if (node.nodeType === Node.TEXT_NODE) {
@@ -121,13 +138,36 @@ class StaticPDFGenerator {
                 }
               };
               walkTextNodes(document.body);
-              
+
               // 커스텀 이벤트 발생
               document.dispatchEvent(new CustomEvent('dataInjected', { detail: pageData }));
+
+              // 데이터 주입 완료 표시
+              window.dataInjectionComplete = true;
             }, data[`page${pageNum}`]);
-            
-            // 렌더링 대기
+
+            // 데이터 주입 완료 대기
+            await pageTab.waitForFunction(
+              () => window.dataInjectionComplete === true,
+              { timeout: 10000 }
+            ).catch(() => {
+              console.log(`  ⚠️ Data injection timeout for page ${pageNum}, continuing...`);
+            });
+
+            // 추가 렌더링 대기 (React 재렌더링을 위해)
             await new Promise(resolve => setTimeout(resolve, waitTime));
+
+            // 모든 이미지 로딩 대기
+            await pageTab.evaluate(() => {
+              return Promise.all(
+                Array.from(document.images)
+                  .filter(img => !img.complete)
+                  .map(img => new Promise(resolve => {
+                    img.addEventListener('load', resolve);
+                    img.addEventListener('error', resolve);
+                  }))
+              );
+            });
           }
 
           // PDF 생성
