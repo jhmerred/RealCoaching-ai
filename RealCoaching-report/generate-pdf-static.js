@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+const { chromium } = require('playwright');
 const fs = require('fs').promises;
 // StaticServer 제거 - API 서버에서 직접 정적 파일 서빙
 const { buildAllPages } = require('./build-all-pages');
@@ -57,10 +57,10 @@ class StaticPDFGenerator {
       // 서버는 이미 실행 중 (pdf-api-server.js)
       const port = this.serverPort;
       
-      // 2. Puppeteer 시작
+      // 2. Playwright 시작
       console.log('🌐 Launching browser...');
-      this.browser = await puppeteer.launch({
-        headless: 'new',
+      this.browser = await chromium.launch({
+        headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
 
@@ -71,7 +71,7 @@ class StaticPDFGenerator {
       // 페이지별 브라우저 탭 생성 함수
       const processPage = async (pageNum) => {
         const pageTab = await this.browser.newPage();
-        await pageTab.setViewport({ width: 594, height: 841 });
+        await pageTab.setViewportSize({ width: 594, height: 841 });
         
         const url = `http://localhost:${port}/page-${pageNum}`;
         
@@ -79,9 +79,9 @@ class StaticPDFGenerator {
           console.log(`📄 Processing page ${pageNum}...`);
           
           // 페이지 로드
-          await pageTab.goto(url, { 
-            waitUntil: 'networkidle0',
-            timeout: 100000 
+          await pageTab.goto(url, {
+            waitUntil: 'networkidle',
+            timeout: 100000
           });
 
           // 데이터 주입
