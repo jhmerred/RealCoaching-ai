@@ -73,7 +73,7 @@ export const Body = ({ data = {} }) => {
 
   const coachingPoint = data.coachingPoint || "갈등 상황을 효과적으로 다루는 방법과 건설적인 피드백 기술을 중심으로 코칭을 받아보시길 제안드립니다. 이를 통해 이미 강점으로 보유한 정서적 지원 역량과 결합된 더욱 영향력 있는 리더십을 발휘하실 수 있습니다.";
   return (
-    <div className="flex flex-col items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
+    <div className="flex flex-col items-start gap-3 relative self-stretch w-full flex-[0_0_auto]">
       <div className="flex flex-col w-[556px] items-start gap-1 relative flex-[0_0_auto] mr-[-1.00px]">
         <div className="gap-2.5 flex items-center relative self-stretch w-full flex-[0_0_auto]">
           <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-sm tracking-[0.14px] leading-[21px] whitespace-nowrap">
@@ -83,9 +83,9 @@ export const Body = ({ data = {} }) => {
 
         <div className="flex items-start justify-around gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
           <div className="flex-col items-start flex-1 grow bg-white rounded-lg overflow-hidden flex relative">
-            <div className="items-center justify-center px-0 py-2 self-stretch w-full flex-[0_0_auto] bg-[#f4f7fa] flex relative">
+            <div className="items-center justify-center px-0 py-1.5 self-stretch w-full flex-[0_0_auto] bg-[#f4f7fa] flex relative">
               <div className="flex w-[120px] items-center justify-center relative">
-                <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-black text-xs tracking-[-0.18px] leading-[18px] whitespace-nowrap">
+                <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-black text-[10px] tracking-[-0.18px] leading-[15px] whitespace-nowrap">
                   리더십 영역
                 </div>
               </div>
@@ -109,23 +109,23 @@ export const Body = ({ data = {} }) => {
               </div>
 
               <div className="items-center justify-center flex-1 grow flex relative">
-                <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-black text-xs tracking-[-0.18px] leading-[18px] whitespace-nowrap">
+                <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-black text-[10px] tracking-[-0.18px] leading-[15px] whitespace-nowrap">
                   평가
                 </div>
               </div>
             </div>
 
             {scoreData.map((item, index) => (
-              <div key={index} className="px-0 py-1.5 border-b [border-bottom-style:solid] border-[#e1dfdf] flex items-center relative self-stretch w-full flex-[0_0_auto]">
+              <div key={index} className="px-0 py-1 border-b [border-bottom-style:solid] border-[#e1dfdf] flex items-center relative self-stretch w-full flex-[0_0_auto]">
                 <div className="w-[120px] pl-2.5 pr-0 py-0 flex items-center relative">
-                  <div className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-black text-[10px] tracking-[-0.15px] leading-[15px]">
+                  <div className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-black text-[9px] tracking-[-0.15px] leading-[13px]">
                     {item.title}
                   </div>
                 </div>
 
                 <div className="w-[60px] justify-center flex items-center relative">
                   <button className="all-[unset] box-border inline-flex items-center gap-0.5 relative flex-[0_0_auto]">
-                    <div className="relative w-fit mt-[-1.00px] [font-family:'Pretendard-SemiBold',Helvetica] font-semibold text-black text-[10px] tracking-[0.10px] leading-[15px] whitespace-nowrap">
+                    <div className="relative w-fit mt-[-1.00px] [font-family:'Pretendard-SemiBold',Helvetica] font-semibold text-black text-[9px] tracking-[0.10px] leading-[13px] whitespace-nowrap">
                       {item.score.toFixed(1)}
                     </div>
                   </button>
@@ -142,14 +142,14 @@ export const Body = ({ data = {} }) => {
 
                 <div className="w-[60px] justify-center flex items-center relative">
                   <button className="all-[unset] box-border inline-flex items-center gap-0.5 relative flex-[0_0_auto]">
-                    <div className="relative w-fit mt-[-1.00px] [font-family:'Pretendard-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[0.10px] leading-[15px] whitespace-nowrap">
+                    <div className="relative w-fit mt-[-1.00px] [font-family:'Pretendard-Medium',Helvetica] font-medium text-gray-500 text-[9px] tracking-[0.10px] leading-[13px] whitespace-nowrap">
                       {getLevel(item.score)}
                     </div>
                   </button>
                 </div>
 
                 <div className="flex-1 grow flex items-center relative">
-                  <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-black text-[10px] text-center tracking-[-0.15px] leading-[15px] whitespace-pre-line">
+                  <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-black text-[9px] text-center tracking-[-0.15px] leading-[13px] whitespace-pre-line">
                     {item.evaluation}
                   </p>
                 </div>
@@ -166,17 +166,17 @@ export const Body = ({ data = {} }) => {
           </div>
         </div>
 
-        <div className="flex flex-col w-[555px] items-start gap-1.5 relative flex-[0_0_auto]">
+        <div className="flex flex-col w-[555px] items-start gap-1 relative flex-[0_0_auto]">
           <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
-            <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-Bold',Helvetica] font-bold text-[#8e8e93] text-[10px] tracking-[-0.15px] leading-[15px] whitespace-nowrap">
+            <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-Bold',Helvetica] font-bold text-[#8e8e93] text-[9px] tracking-[-0.15px] leading-[13px] whitespace-nowrap">
               1-3개월
             </div>
 
-            <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-Bold',Helvetica] font-bold text-[#8e8e93] text-[10px] tracking-[-0.15px] leading-[15px] whitespace-nowrap">
+            <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-Bold',Helvetica] font-bold text-[#8e8e93] text-[9px] tracking-[-0.15px] leading-[13px] whitespace-nowrap">
               3-6개월
             </div>
 
-            <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-Bold',Helvetica] font-bold text-[#8e8e93] text-[10px] text-right tracking-[-0.15px] leading-[15px] whitespace-nowrap">
+            <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-Bold',Helvetica] font-bold text-[#8e8e93] text-[9px] text-right tracking-[-0.15px] leading-[13px] whitespace-nowrap">
               6개월 이상
             </div>
           </div>
@@ -189,10 +189,10 @@ export const Body = ({ data = {} }) => {
             <div className="relative flex-1 grow h-1 bg-[#679af7] rounded-[100px]" />
           </div>
 
-          <div className="flex items-start gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
-            <div className="flex flex-col items-center gap-1 p-2.5 relative flex-1 grow bg-[#f3f6fa] rounded-lg overflow-hidden">
+          <div className="flex items-start gap-2 relative self-stretch w-full flex-[0_0_auto]">
+            <div className="flex flex-col items-center gap-0.5 p-1.5 relative flex-1 grow bg-[#f3f6fa] rounded-lg overflow-hidden">
               <div className="items-center self-stretch w-full flex-[0_0_auto] flex relative">
-                <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs tracking-[-0.12px] leading-[18px] whitespace-nowrap">
+                <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-[10px] tracking-[-0.12px] leading-[15px] whitespace-nowrap">
                   단기 목표
                 </div>
               </div>
@@ -202,7 +202,7 @@ export const Body = ({ data = {} }) => {
                   <div key={idx} className="items-center gap-1.5 self-stretch w-full flex-[0_0_auto] flex relative">
                     <div className="flex flex-col items-start relative flex-1 grow">
                       <div className="flex items-center gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
-                        <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[17.0px]">
+                        <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[9px] tracking-[-0.15px] leading-[14px]">
                           {goal}
                         </p>
                       </div>
@@ -212,9 +212,9 @@ export const Body = ({ data = {} }) => {
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-1 p-2.5 relative flex-1 grow bg-[#f3f6fa] rounded-lg overflow-hidden">
+            <div className="flex flex-col items-center gap-0.5 p-1.5 relative flex-1 grow bg-[#f3f6fa] rounded-lg overflow-hidden">
               <div className="items-center self-stretch w-full flex-[0_0_auto] flex relative">
-                <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs tracking-[-0.12px] leading-[18px] whitespace-nowrap">
+                <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-[10px] tracking-[-0.12px] leading-[15px] whitespace-nowrap">
                   중기 목표
                 </div>
               </div>
@@ -224,7 +224,7 @@ export const Body = ({ data = {} }) => {
                   <div key={idx} className="items-center gap-1.5 self-stretch w-full flex-[0_0_auto] flex relative">
                     <div className="flex flex-col items-start relative flex-1 grow">
                       <div className="flex items-center gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
-                        <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[17.0px]">
+                        <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[9px] tracking-[-0.15px] leading-[14px]">
                           {goal}
                         </p>
                       </div>
@@ -234,9 +234,9 @@ export const Body = ({ data = {} }) => {
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-1 p-2.5 relative flex-1 grow bg-[#f3f6fa] rounded-lg overflow-hidden">
+            <div className="flex flex-col items-center gap-0.5 p-1.5 relative flex-1 grow bg-[#f3f6fa] rounded-lg overflow-hidden">
               <div className="items-center self-stretch w-full flex-[0_0_auto] flex relative">
-                <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs tracking-[-0.12px] leading-[18px] whitespace-nowrap">
+                <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-[10px] tracking-[-0.12px] leading-[15px] whitespace-nowrap">
                   장기 목표
                 </div>
               </div>
@@ -246,7 +246,7 @@ export const Body = ({ data = {} }) => {
                   <div key={idx} className="items-center gap-1.5 self-stretch w-full flex-[0_0_auto] flex relative">
                     <div className="flex flex-col items-start relative flex-1 grow">
                       <div className="flex items-center gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
-                        <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[17.0px]">
+                        <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[9px] tracking-[-0.15px] leading-[14px]">
                           {goal}
                         </p>
                       </div>
@@ -266,29 +266,29 @@ export const Body = ({ data = {} }) => {
           </div>
         </div>
 
-        <div className="flex flex-col items-start gap-1.5 relative self-stretch w-full flex-[0_0_auto]">
-          <div className="items-start flex gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
-            <div className="w-[84px] items-center px-0 py-2.5 flex relative">
+        <div className="flex flex-col items-start gap-1 relative self-stretch w-full flex-[0_0_auto]">
+          <div className="items-start flex gap-2 relative self-stretch w-full flex-[0_0_auto]">
+            <div className="w-[84px] items-center px-0 py-1.5 flex relative">
               <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs tracking-[-0.12px] leading-[18px] whitespace-nowrap">
                 종합평가
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 p-2.5 relative flex-1 grow bg-[#f4f7fa] rounded-lg">
-              <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[17.0px]">
+            <div className="flex items-center gap-2.5 p-2 relative flex-1 grow bg-[#f4f7fa] rounded-lg">
+              <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[9px] tracking-[-0.15px] leading-[14px]">
                 {evaluationData.comprehensive}
               </p>
             </div>
           </div>
 
-          <div className="items-start gap-2.5 self-stretch w-full flex-[0_0_auto] flex relative">
-            <div className="w-[84px] items-center px-0 py-2.5 flex relative">
+          <div className="items-start gap-2 self-stretch w-full flex-[0_0_auto] flex relative">
+            <div className="w-[84px] items-center px-0 py-1.5 flex relative">
               <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs tracking-[-0.12px] leading-[18px] whitespace-nowrap">
                 팀 차원 개선 방안
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 p-2.5 relative flex-1 grow bg-[#f4f7fa] rounded-lg">
+            <div className="flex items-center gap-2.5 p-2 relative flex-1 grow bg-[#f4f7fa] rounded-lg">
               <div className="flex flex-col gap-1">
                 {evaluationData.teamImprovement.map((item, idx) => (
                   <p key={idx} className="relative [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[17.0px]">
@@ -301,7 +301,7 @@ export const Body = ({ data = {} }) => {
         </div>
       </div>
 
-      <div className="flex flex-col w-[555px] items-center gap-1.5 p-2.5 relative flex-[0_0_auto] bg-[#edf6ff] rounded-xl overflow-hidden border border-solid border-[#bfdfff]">
+      <div className="flex flex-col w-[555px] items-center gap-1 p-2 relative flex-[0_0_auto] bg-[#edf6ff] rounded-xl overflow-hidden border border-solid border-[#bfdfff]">
         <div className="items-center self-stretch w-full flex-[0_0_auto] flex relative">
           <div className="relative w-fit mt-[-1.00px] [font-family:'SUIT-ExtraBold',Helvetica] font-extrabold text-[#253c7f] text-xs tracking-[-0.12px] leading-[18px] whitespace-nowrap">
             리더십 코칭 Point
@@ -311,7 +311,7 @@ export const Body = ({ data = {} }) => {
         <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
           <div className="flex-col items-start justify-center self-stretch w-full flex-[0_0_auto] flex relative">
             <div className="flex items-center gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
-              <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[10px] tracking-[-0.15px] leading-[17.0px]">
+              <p className="relative flex-1 mt-[-1.00px] [font-family:'SUIT-Medium',Helvetica] font-medium text-gray-500 text-[9px] tracking-[-0.15px] leading-[14px]">
                 {coachingPoint}
               </p>
             </div>

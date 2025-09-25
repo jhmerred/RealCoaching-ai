@@ -78,25 +78,45 @@ class StaticPDFGenerator {
         try {
           console.log(`📄 Processing page ${pageNum}...`);
           
-          // 페이지 로드
+          // 페이지 로드 (정적 빌드된 페이지)
           await pageTab.goto(url, {
-            waitUntil: 'networkidle',
+            waitUntil: 'networkidle',  // 가장 안전한 옵션: 네트워크 활동이 없을 때까지 대기
             timeout: 100000
           });
 
-          // 페이지가 완전히 로드될 때까지 대기
-          try {
-            // body 요소가 있고 내용이 있는지 확인
-            await pageTab.waitForSelector('body', { timeout: 5000 });
+          // 정적 페이지가 완전히 로드되었는지 확인
+          await pageTab.waitForFunction(
+            () => {
+              // DOM이 완전히 로드됨
+              if (document.readyState !== 'complete') return false;
 
-            // DOM이 어느 정도 로드되었는지 확인
-            await pageTab.waitForFunction(
-              () => document.readyState === 'complete' && document.body.children.length > 0,
-              { timeout: 10000 }
-            );
-          } catch (e) {
-            console.log(`  ⚠️ Page load check timeout for page ${pageNum}, continuing...`);
-          }
+              // body에 내용이 있는지 확인
+              if (!document.body || document.body.children.length === 0) return false;
+
+              // 모든 스타일시트가 로드됨
+              const stylesheets = Array.from(document.styleSheets);
+              for (let sheet of stylesheets) {
+                try {
+                  // 스타일시트 접근 가능한지 확인
+                  if (sheet.cssRules === null) return false;
+                } catch (e) {
+                  // CORS 에러는 무시 (외부 스타일시트)
+                }
+              }
+
+              // 모든 폰트가 로드됨
+              if (document.fonts && document.fonts.ready) {
+                return document.fonts.check('1em SUIT-ExtraBold') ||
+                       document.fonts.check('1em SUIT-Medium') ||
+                       document.fonts.size > 0;
+              }
+
+              return true;
+            },
+            { timeout: 10000 }
+          ).catch(() => {
+            console.log(`  ⚠️ Page load verification timeout for page ${pageNum}, continuing...`);
+          });
 
           // 데이터 주입
           if (data[`page${pageNum}`]) {
