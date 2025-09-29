@@ -61,7 +61,15 @@ class StaticPDFGenerator {
       console.log('🌐 Launching browser...');
       this.browser = await chromium.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',  // EC2에서 메모리 문제 방지
+          '--disable-gpu',  // EC2에서 GPU 렌더링 비활성화
+          '--font-render-hinting=none',  // 폰트 렌더링 힌팅 비활성화
+          '--disable-font-subpixel-positioning',  // 서브픽셀 폰트 위치 비활성화
+          '--force-color-profile=srgb'  // 일관된 색상 프로파일
+        ]
       });
 
       // 3. 각 페이지 병렬 처리
@@ -72,12 +80,15 @@ class StaticPDFGenerator {
       const processPage = async (pageNum) => {
         const pageTab = await this.browser.newPage();
         await pageTab.setViewportSize({ width: 594, height: 841 });
-        
+
         const url = `http://localhost:${port}/page-${pageNum}`;
-        
+
         try {
           console.log(`📄 Processing page ${pageNum}...`);
-          
+
+          // EC2에서 page2, page4에 대한 특별 처리
+          const needsExtraWait = [2, 4].includes(pageNum);
+
           // 페이지 로드 (정적 빌드된 페이지)
           await pageTab.goto(url, {
             waitUntil: 'networkidle',  // 가장 안전한 옵션: 네트워크 활동이 없을 때까지 대기
@@ -113,10 +124,21 @@ class StaticPDFGenerator {
 
               return true;
             },
-            { timeout: 10000 }
+            { timeout: needsExtraWait ? 20000 : 10000 }  // page2, page4는 더 긴 타임아웃
           ).catch(() => {
             console.log(`  ⚠️ Page load verification timeout for page ${pageNum}, continuing...`);
           });
+
+          // EC2에서 page2, page4를 위한 추가 폰트 로딩 대기
+          if (needsExtraWait) {
+            console.log(`  ⏳ Extra wait for page ${pageNum} (font loading)...`);
+            await pageTab.evaluate(() => {
+              return document.fonts.ready.then(() => {
+                // 폰트 로드 후 추가로 대기
+                return new Promise(resolve => setTimeout(resolve, 2000));
+              });
+            });
+          }
 
           // 데이터 주입
           if (data[`page${pageNum}`]) {
@@ -169,13 +191,15 @@ class StaticPDFGenerator {
             // 데이터 주입 완료 대기
             await pageTab.waitForFunction(
               () => window.dataInjectionComplete === true,
-              { timeout: 10000 }
+              { timeout: needsExtraWait ? 20000 : 10000 }
             ).catch(() => {
               console.log(`  ⚠️ Data injection timeout for page ${pageNum}, continuing...`);
             });
 
             // 추가 렌더링 대기 (React 재렌더링을 위해)
-            await new Promise(resolve => setTimeout(resolve, waitTime));
+            // EC2에서 page2, page4는 더 긴 대기시간
+            const renderWaitTime = needsExtraWait ? waitTime * 2 : waitTime;
+            await new Promise(resolve => setTimeout(resolve, renderWaitTime));
 
             // 모든 이미지 로딩 대기
             await pageTab.evaluate(() => {
