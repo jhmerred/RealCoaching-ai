@@ -4,10 +4,10 @@ import tableChart from "@/assets/table_chart.png"
 export const Body = ({ data = {} }) => {
   // 기본값 설정
   const scoreData = data.scoreData || [
-    { title: "도움 요청 용이함", personalScore: 4.1, orgAverage: 2.0 },
-    { title: "문제 자유롭게 말할 수 있음", personalScore: 4.9, orgAverage: 4.9 },
-    { title: "위험 감수 발언 안전함", personalScore: 3.5, orgAverage: 5.0 },
-    { title: "구성원들 간 상호 존중", personalScore: 3.5, orgAverage: 4.0 }
+    { title: "감정 표현 자유", personalScore: 4.1, orgAverage: 2.0 },
+    { title: "조직 내 정서상태", personalScore: 4.9, orgAverage: 4.9 },
+    { title: "기대 감정 일치도", personalScore: 3.5, orgAverage: 5.0 },
+    { title: "정서문화 건강성", personalScore: 3.5, orgAverage: 4.0 }
   ];
 
   // y좌표 계산 함수
@@ -25,20 +25,20 @@ export const Body = ({ data = {} }) => {
   // 측정 항목별 설명 데이터
   const interpretationData = [
     {
-      title: "도움 요청 용이함",
-      description: "도움 요청 용이함"
+      title: "감정 표현 자유",
+      description: "감정을 자유롭게 표현하는 권리"
     },
     {
-      title: "문제 자유롭게 말할 수 있음",
-      description: "문제 자유롭게 말할 수 있음"
+      title: "조직 내 정서상태",
+      description: "구성원들이 느끼는 감정과 분위기의 집합적 상태"
     },
     {
-      title: "위험 감수 발언 안전함",
-      description: "위험 감수 발언 안전함"
+      title: "기대 감정 일치도",
+      description: "개인이 조직이나 상황에서 기대한 감정과 실제 경험한 감정의 일치도"
     },
     {
-      title: "구성원들 간 상호 존중",
-      description: "구성원들 간 상호 존중"
+      title: "정서문화 건강성",
+      description: "조직 내 감정 표현과 관리 방식이 구성원에게 긍정적 영향을 주는 정도"
     }
   ];
 
@@ -168,28 +168,28 @@ export const Body = ({ data = {} }) => {
                     <div className="absolute w-[45px] h-5 top-0 left-0">
 
                       <div className="absolute w-[43px] top-[9px] left-0 [font-family:'SUIT-Medium',Helvetica] font-medium text-black text-[10px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-                        도움 요청
+                        감정 표현
                       </div>
                     </div>
 
                     <div className="absolute w-[55px] h-5 top-0 left-[85px]">
 
                       <div className="absolute w-[53px] top-[9px] left-0 [font-family:'SUIT-Medium',Helvetica] font-medium text-black text-[10px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-                        문제 말하기
+                        정서상태
                       </div>
                     </div>
 
                     <div className="absolute w-[67px] h-5 top-0 left-[188px]">
 
                       <div className="absolute w-[65px] top-[9px] left-0 [font-family:'SUIT-Medium',Helvetica] font-medium text-black text-[10px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-                        위험 감수 발언
+                        기대 감정
                       </div>
                     </div>
 
                     <div className="absolute w-[45px] h-5 top-0 left-[290px]">
 
                       <div className="absolute w-[43px] top-[9px] left-0 [font-family:'SUIT-Medium',Helvetica] font-medium text-black text-[10px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-                        상호 존중
+                        정서문화
                       </div>
                     </div>
                   </div>

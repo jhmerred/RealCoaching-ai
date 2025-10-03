@@ -367,10 +367,10 @@ H) page12 (목표/모니터링)
     },
     "page8": { // 정서문화 (개인 vs 조직)
       "scoreData": [
-        { "title": "도움 요청 용이함", "personalScore": 0, "orgAverage": 2.5 },
-        { "title": "문제 자유롭게 말할 수 있음", "personalScore": 0, "orgAverage": 2.5 },
-        { "title": "위험 감수 발언 안전함", "personalScore": 0, "orgAverage": 2.5 },
-        { "title": "구성원들 간 상호 존중", "personalScore": 0, "orgAverage": 2.5 }
+        { "title": "감정 표현 자유", "personalScore": 0, "orgAverage": 2.5 },
+        { "title": "조직 내 정서상태", "personalScore": 0, "orgAverage": 2.5 },
+        { "title": "기대 감정 일치도", "personalScore": 0, "orgAverage": 2.5 },
+        { "title": "정서문화 건강성", "personalScore": 0, "orgAverage": 2.5 }
       ],
       "insights": {
         "overall": "",

@@ -6,10 +6,10 @@ import { Header } from "./sections/Header";
 export const Page = () => {
   const [data, setData] = useState({
     scoreData: [
-      { title: "도움 요청 용이함", personalScore: 4.1, orgAverage: 2.0 },
-      { title: "문제 자유롭게 말할 수 있음", personalScore: 4.9, orgAverage: 4.9 },
-      { title: "위험 감수 발언 안전함", personalScore: 3.5, orgAverage: 5.0 },
-      { title: "구성원들 간 상호 존중", personalScore: 3.5, orgAverage: 4.0 }
+      { title: "감정 표현 자유", personalScore: 4.1, orgAverage: 2.0 },
+      { title: "조직 내 정서상태", personalScore: 4.9, orgAverage: 4.9 },
+      { title: "기대 감정 일치도", personalScore: 3.5, orgAverage: 5.0 },
+      { title: "정서문화 건강성", personalScore: 3.5, orgAverage: 4.0 }
     ],
     insights: {
       overall: "전반적으로 조직 평균보다 약간 낮은 정서문화 인식을 보이고 있으며, 특히 감정 대화 존중 영역에서 개선의 여지가 있습니다. 이는 조직 내 의견 표현 과정에서 감정적 측면이 충분히 고려되지 않는다고 느낄 수 있음을 시사합니다.",
