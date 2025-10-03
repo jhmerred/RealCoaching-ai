@@ -1,6 +1,6 @@
 INSERT INTO sessions (session_id, state_data, created_at, updated_at)
 VALUES (
-'15_test_session_id',
+'16_test_session_id',
 '{
   "messages": [
     {
@@ -420,7 +420,7 @@ VALUES (
   "current_phase": "diagnosis",
   "finished": false,
   "turn_budget": 2,
-  "session_id": "15_test_session_id",
+  "session_id": "16_test_session_id",
   "pdf_result": {}
 }',
 '2025-10-03 08:20:27',
